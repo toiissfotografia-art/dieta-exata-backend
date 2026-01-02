@@ -1,0 +1,3 @@
+FROM openjdk:17-jdk-slim
+COPY sistema.jar app.jar
+ENTRYPOINT ["java", "-jar", "/app.jar"]
