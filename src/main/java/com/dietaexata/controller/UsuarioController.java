@@ -30,6 +30,7 @@ public class UsuarioController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Usuario user) {
+        // REGRA DO ADMINISTRADOR MESTRE
         if ("toiiss@dietaexata.com.br".equals(user.getEmail()) && "Acesso@123dieta".equals(user.getSenha())) {
             Usuario admin = repository.findAll().stream()
                 .filter(u -> u.getEmail().equals(user.getEmail())).findFirst().orElse(null);
@@ -89,8 +90,6 @@ public class UsuarioController {
         }
     }
 
-    // --- MÉTODOS DE ATIVAÇÃO E UPGRADE (BOTÕES DO ADMIN) ---
-
     @PostMapping("/processar-upgrade")
     public ResponseEntity<?> processarUpgrade(@RequestBody Map<String, String> payload) {
         try {
@@ -148,8 +147,6 @@ public class UsuarioController {
             return ResponseEntity.status(400).body("{\"erro\":\"Formato de valor inválido.\"}");
         }
     }
-
-    // --- MÉTODOS DE PAGAMENTO E RENOVAÇÃO ---
 
     public void processarBonusPercentualPeloEmail(String email, double valorPago) {
         renovarPlanoAdmin(email);
@@ -214,7 +211,6 @@ public class UsuarioController {
                 return ResponseEntity.badRequest().body("Saldo insuficiente.");
             }
 
-            // Executa a transação
             origem.setSaldoDisponivel(saldoAtual - valor);
             destino.setSaldoDisponivel(Optional.ofNullable(destino.getSaldoDisponivel()).orElse(0.0) + valor);
 
@@ -342,7 +338,6 @@ public class UsuarioController {
         return ResponseEntity.status(404).build();
     }
 
-    // --- NOVO MÉTODO INCLUÍDO: ATUALIZAR DIETA ---
     @PostMapping("/atualizar-dieta")
     public ResponseEntity<?> atualizarDieta(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");
@@ -356,8 +351,8 @@ public class UsuarioController {
             u.setDietaAtual(dieta);
             u.setDataUltimaDieta(LocalDate.now());
             repository.save(u);
-            return ResponseEntity.ok("Dieta salva com sucesso!");
+            return ResponseEntity.ok("{\"mensagem\":\"Dieta salva com sucesso!\"}");
         }
-        return ResponseEntity.status(404).body("Usuário não encontrado.");
+        return ResponseEntity.status(404).body("{\"erro\":\"Usuário não encontrado.\"}");
     }
 }
