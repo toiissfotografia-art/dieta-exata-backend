@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CADASTRO | DIETA EXATA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <script src="config.js"></script>
+    <style>
+        :root { --neon: #00f2ff; --bg: #050505; --card: #0d0d0d; }
+        body { background: var(--bg); color: white; font-family: 'Rajdhani'; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .box { background: var(--card); padding: 40px; border-radius: 15px; border: 1px solid #222; width: 90%; max-width: 400px; box-shadow: 0 0 30px rgba(0, 242, 255, 0.1); }
+        h1 { font-family: 'Orbitron'; color: var(--neon); text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #888; font-size: 12px; margin-bottom: 25px; letter-spacing: 2px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; background: #111; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
+        input:focus { border-color: var(--neon); outline: none; }
+        .btn { width: 100%; padding: 15px; background: var(--neon); color: black; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 10px; transition: 0.3s; }
+        .btn:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--neon); }
+        .btn:disabled { background: #444; cursor: not-allowed; opacity: 0.6; }
+        .ref-banner { background: rgba(0, 242, 255, 0.1); border: 1px solid var(--neon); padding: 10px; border-radius: 5px; font-size: 13px; text-align: center; margin-bottom: 20px; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>RECRUTAMENTO</h1>
+        <div class="subtitle">PROTOCOLO DE REDE v4.0</div>
+
+        <div id="ref-section" style="display: none;" class="ref-banner">
+            Convidado por: <br><b id="ref-name" style="color:var(--neon)">-</b>
+        </div>
+        
+        <input type="text" id="reg_nome" placeholder="Nome Completo" autocomplete="off">
+        <input type="email" id="reg_email" placeholder="E-mail do Novo Membro" autocomplete="new-password">
+        <input type="password" id="reg_senha" placeholder="Crie uma Senha" autocomplete="new-password">
+        
+        <input type="hidden" id="indicadorEmail">
+        
+        <button id="btnRegistrar" class="btn" onclick="registrar()">ATIVAR MINHA CONTA</button>
+        
+        <p style="text-align:center; font-size:13px; color: #666; margin-top: 20px;">
+            Já possui acesso? <a href="login.html" style="color:var(--neon); text-decoration: none;">Acessar Terminal</a>
+        </p>
+    </div>
+
+    <script>
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const ref = urlParams.get('ref');
+            
+            if (ref) {
+                const indicador = ref.toLowerCase().trim();
+                document.getElementById('indicadorEmail').value = indicador;
+                document.getElementById('ref-name').innerText = indicador;
+                document.getElementById('ref-section').style.display = 'block';
+                localStorage.setItem('indicador_email', indicador);
+            }
+        };
+
+        async function registrar() {
+            const btn = document.getElementById('btnRegistrar');
+            const nome = document.getElementById('reg_nome').value;
+            const email = document.getElementById('reg_email').value;
+            const senha = document.getElementById('reg_senha').value;
+            const indicadorEmail = document.getElementById('indicadorEmail').value;
+
+            if(!nome || !email || !senha) {
+                alert("Preencha todos os campos para prosseguir.");
+                return;
+            }
+
+            // O plano vem do localStorage ou padrão BRONZE
+            const planoSelecionado = localStorage.getItem('plano_escolhido') || 'BRONZE';
+
+            const dados = {
+                nome: nome,
+                email: email,
+                senha: senha,
+                indicadoPor: indicadorEmail, // Corrigido para bater com o atributo do Java 'indicadoPor'
+                plano: planoSelecionado,
+                saldoDisponivel: 0,
+                saldoSolicitado: 0,
+                ganhosDiretos: 0,
+                ganhosIndiretos: 0,
+                dietaAtual: ""
+            };
+
+            btn.disabled = true;
+            btn.innerText = "PROCESSANDO...";
+
+            try {
+                const res = await fetch('api_bridge.php?path=api/usuarios/cadastrar', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(dados)
+                });
+
+                if(res.ok) {
+                    alert("CADASTRO PRÉ-APROVADO! Redirecionando para a área de pagamento PIX.");
+                    
+                    // REDIRECIONAMENTO ESTRATÉGICO PARA O PAGAMENTO
+                    // Passamos o email e plano para facilitar a identificação na tela de PIX
+                    window.location.href = `pix.html?email=${encodeURIComponent(email)}&plano=${planoSelecionado}`;
+                } else {
+                    btn.disabled = false;
+                    btn.innerText = "ATIVAR MINHA CONTA";
+                    const msg = await res.text();
+                    alert("ERRO NO CADASTRO: " + (msg || "E-mail já cadastrado."));
+                }
+            } catch (err) {
+                btn.disabled = false;
+                btn.innerText = "ATIVAR MINHA CONTA";
+                alert("ERRO DE CONEXÃO: Verifique o servidor.");
+            }
+        }
+    </script>
+</body>
+</html>

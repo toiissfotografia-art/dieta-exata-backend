@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLANOS | DIETA EXATA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="config.js"></script>
+
+    <style>
+        :root { --neon: #00f2ff; --bg: #050505; --gold: #ffd700; --card: #0d0d0d; }
+        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; text-align: center; padding: 20px; margin: 0; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+        
+        h1 { font-family: 'Orbitron'; font-size: 28px; letter-spacing: 2px; margin-bottom: 10px; }
+        .subtitle { color: #888; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 3px; font-size: 12px; }
+
+        .grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; max-width: 1200px; margin: 0 auto; }
+        
+        .card { 
+            background: var(--card); 
+            border: 1px solid #222; 
+            padding: 40px 30px; 
+            width: 280px; 
+            border-radius: 20px; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover { border-color: var(--neon); transform: translateY(-15px); box-shadow: 0 10px 30px rgba(0, 242, 255, 0.15); }
+        
+        .card h3 { font-family: 'Orbitron'; font-size: 18px; margin: 0; color: #fff; }
+        .card h2 { font-family: 'Orbitron'; font-size: 36px; margin: 20px 0; color: var(--neon); }
+        
+        .features { list-style: none; padding: 0; margin: 20px 0; text-align: left; font-size: 14px; color: #aaa; }
+        .features li { margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .features li::before { content: '✓'; color: var(--neon); font-weight: bold; }
+
+        .btn-compra { 
+            background: var(--neon); 
+            color: black; 
+            border: none; 
+            padding: 16px; 
+            width: 100%; 
+            font-family: 'Orbitron'; 
+            font-weight: bold; 
+            cursor: pointer; 
+            border-radius: 8px; 
+            margin-top: 20px; 
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-compra:hover { transform: scale(1.05); filter: brightness(1.2); }
+
+        /* Estilo para o Plano Ouro */
+        .ouro { border: 1px solid var(--gold); background: linear-gradient(145deg, #0d0d0d 0%, #1a1600 100%); }
+        .ouro h3, .ouro h2 { color: var(--gold); }
+        .ouro .btn-compra { background: var(--gold); }
+        .ouro .features li::before { color: var(--gold); }
+        .badge-vip { position: absolute; top: 15px; right: -35px; background: var(--gold); color: black; font-family: 'Orbitron'; font-size: 10px; padding: 5px 40px; transform: rotate(45deg); font-weight: bold; }
+
+        @media (max-width: 768px) { .grid { flex-direction: column; align-items: center; } }
+    </style>
+</head>
+<body>
+
+    <h1 style="font-family:'Orbitron'">ESCOLHA SEU <span style="color:var(--neon)">LEVEL</span></h1>
+    <div class="subtitle">Ative seu protocolo e comece a lucrar</div>
+    
+    <div class="grid">
+        <div class="card">
+            <h3>BRONZE</h3>
+            <h2>R$ 19,99</h2>
+            <ul class="features">
+                <li>Dieta Básica I.A.</li>
+                <li>1 Nível de Indicação</li>
+                <li>Suporte via Grupo</li>
+            </ul>
+            <button class="btn-compra" onclick="comprar('BRONZE')">ASSINAR AGORA</button>
+        </div>
+
+        <div class="card">
+            <h3>PRATA</h3>
+            <h2>R$ 49,99</h2>
+            <ul class="features">
+                <li>Dieta Personalizada</li>
+                <li>2 Níveis de Indicação</li>
+                <li>Acesso ao Terminal Pro</li>
+            </ul>
+            <button class="btn-compra" onclick="comprar('PRATA')">ASSINAR AGORA</button>
+        </div>
+
+        <div class="card ouro">
+            <div class="badge-vip">BEST SELLER</div>
+            <h3>⭐ OURO</h3>
+            <h2>R$ 79,99</h2>
+            <ul class="features">
+                <li>Protocolo Full Biohacking</li>
+                <li>Níveis de Indicação Ilimitados</li>
+                <li>Bônus de Liderança</li>
+            </ul>
+            <button class="btn-compra" onclick="comprar('OURO')">ASSINAR AGORA</button>
+        </div>
+    </div>
+
+    <script>
+        // LÓGICA DE AFILIADO: Captura o indicador da URL e persiste no sistema
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const ref = urlParams.get('ref');
+            
+            if (ref) {
+                // Limpeza e persistência do e-mail do indicador
+                const indicadorLimpo = ref.toLowerCase().trim();
+                localStorage.setItem('indicador_email', indicadorLimpo);
+                console.log("Rastreamento de indicação ativo: " + indicadorLimpo);
+            }
+        };
+
+        function comprar(plano) {
+            // Salva a escolha do usuário para processar no cadastro/pagamento
+            localStorage.setItem('plano_escolhido', plano);
+            
+            // Recupera o indicador salvo no carregamento da página
+            const ref = localStorage.getItem('indicador_email');
+            
+            // Redireciona para o cadastro mantendo o parâmetro de referência para segurança extra
+            if (ref) {
+                window.location.href = `cadastro.html?ref=${encodeURIComponent(ref)}`;
+            } else {
+                window.location.href = 'cadastro.html';
+            }
+        }
+    </script>
+</body>
+</html>

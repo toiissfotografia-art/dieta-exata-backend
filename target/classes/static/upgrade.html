@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPGRADE OURO | DIETA EXATA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    
+    <script src="config.js"></script>
+
+    <style>
+        :root { --gold: #ffac00; --neon: #00f2ff; --bg: #050505; }
+        body { background: var(--bg); color: white; font-family: 'Rajdhani'; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: #0d0d0d; padding: 30px; border: 1px solid var(--gold); width: 100%; max-width: 450px; text-align: center; border-radius: 10px; box-shadow: 0 0 20px rgba(255, 172, 0, 0.1); }
+        h1 { font-family: 'Orbitron'; color: var(--gold); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
+        .price-tag { font-family: 'Orbitron'; font-size: 32px; margin: 20px 0; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+        .method-box { background: #111; border: 1px solid #333; padding: 20px; margin: 15px 0; cursor: pointer; transition: 0.3s; text-align: left; position: relative; border-radius: 8px; }
+        .method-box:hover { border-color: var(--gold); background: #1a1a1a; transform: translateY(-2px); }
+        .method-box b { color: var(--gold); display: block; margin-bottom: 5px; font-family: 'Orbitron'; font-size: 14px; }
+        .btn { width: 100%; padding: 15px; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); margin-top: 20px; transition: 0.3s; }
+        .btn:hover { filter: brightness(1.2); }
+        .pix-area { display: none; margin-top: 20px; padding: 15px; border: 1px dashed var(--neon); background: #000; word-break: break-all; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>UPGRADE_SISTEMA</h1>
+        <p>Torne-se <b>OURO</b> e libere ganhos de rede e protocolos avançados.</p>
+        
+        <div class="price-tag">R$ 197,00</div>
+
+        <div class="method-box" onclick="pagarComSaldo()">
+            <b>PAGAR COM SALDO ACUMULADO</b>
+            <span>Seu saldo atual: <span id="meu-saldo" style="color:var(--neon)">Carregando...</span></span>
+        </div>
+
+        <div class="method-box" onclick="mostrarPix()">
+            <b>PAGAR COM PIX (IMEDIATO)</b>
+            <span>Pague agora e ative instantaneamente via chave.</span>
+        </div>
+
+        <div id="pix-display" class="pix-area" onclick="copiarChave()">
+            <p style="font-size: 12px; color: var(--neon); margin: 0;">CLIQUE PARA COPIAR A CHAVE PIX:</p>
+            <b id="chave-pix" style="font-size: 16px; display: block; margin: 10px 0;">pagamentos@dietaexata.com.br</b>
+            <p style="font-size: 10px; color: #888;">Após o pagamento, envie o comprovante no suporte para ativação manual ou aguarde o processamento da API.</p>
+        </div>
+
+        <button class="btn" style="background: #222; color: #888;" onclick="location.href='dashboard.html'">VOLTAR AO PAINEL</button>
+    </div>
+
+    <script>
+        // Obtendo dados da sessão
+        const sessao = localStorage.getItem('usuarioLogado');
+        const usuarioLogado = sessao ? JSON.parse(sessao) : null;
+        const email = usuarioLogado ? usuarioLogado.email : null;
+
+        if (!email) {
+            window.location.href = 'index.html';
+        }
+
+        // --- INCLUSÃO: BUSCA DE SALDO VIA PONTE PHP ---
+        async function carregarSaldo() {
+            try {
+                const res = await fetch('api_bridge.php?path=api/usuarios/todos');
+                const usuarios = await res.json();
+                const u = usuarios.find(user => user.email.toLowerCase() === email.toLowerCase());
+                
+                if (u) {
+                    const saldo = u.saldoDisponivel || 0;
+                    document.getElementById('meu-saldo').innerText = "R$ " + saldo.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                    
+                    // Atualiza a sessão local com os dados mais recentes do servidor
+                    localStorage.setItem('usuarioLogado', JSON.stringify(u));
+                }
+            } catch (err) {
+                document.getElementById('meu-saldo').innerText = "Erro ao conectar";
+                console.error("Erro ao buscar saldo:", err);
+            }
+        }
+
+        function mostrarPix() {
+            document.getElementById('pix-display').style.display = 'block';
+        }
+
+        function copiarChave() {
+            const chave = document.getElementById('chave-pix').innerText;
+            navigator.clipboard.writeText(chave).then(() => {
+                alert("Chave PIX copiada! Realize o pagamento de R$ 197,00.");
+            });
+        }
+
+        // --- INCLUSÃO: PROCESSAMENTO DE UPGRADE VIA PONTE PHP ---
+        async function pagarComSaldo() {
+            // Recarrega dados para evitar uso de saldo desatualizado no cache
+            const sessaoAtualizada = JSON.parse(localStorage.getItem('usuarioLogado'));
+            const saldoAtual = sessaoAtualizada.saldoDisponivel || 0;
+
+            if (saldoAtual < 197) {
+                alert("SALDO INSUFICIENTE: Você possui R$ " + saldoAtual.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + ". O upgrade custa R$ 197,00.");
+                return;
+            }
+
+            if(!confirm("Deseja utilizar R$ 197,00 do seu saldo acumulado para o Upgrade OURO?")) return;
+
+            try {
+                // Chama o endpoint de upgrade passando pela ponte PHP
+                const res = await fetch('api_bridge.php?path=api/usuarios/processar-upgrade', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email: email, metodo: 'SALDO' })
+                });
+
+                if(res.ok) {
+                    alert("SISTEMA ATUALIZADO: Protocolo OURO ativado com sucesso!");
+                    
+                    // Recarrega todos os dados para atualizar o plano no localStorage
+                    const refreshRes = await fetch('api_bridge.php?path=api/usuarios/todos');
+                    const freshUsers = await refreshRes.json();
+                    const freshUser = freshUsers.find(user => user.email.toLowerCase() === email.toLowerCase());
+                    localStorage.setItem('usuarioLogado', JSON.stringify(freshUser));
+                    
+                    window.location.href = 'dashboard.html';
+                } else {
+                    const erro = await res.text();
+                    alert("FALHA NO UPGRADE: " + (erro || "Verifique seu saldo ou tente mais tarde."));
+                }
+            } catch (err) {
+                alert("ERRO DE COMUNICAÇÃO: O servidor de pagamento não respondeu.");
+            }
+        }
+
+        // Inicializa carregando os dados mais recentes
+        window.onload = carregarSaldo;
+    </script>
+</body>
+</html>
