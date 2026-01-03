@@ -10,19 +10,19 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
+                // Incluindo todas as variações do seu domínio próprio
                 .allowedOrigins(
-                    "http://localhost:5500",    // Porta comum do VS Code Live Server
-                    "http://127.0.0.1:5500",
-                    "http://localhost:8081",
-                    "http://127.0.0.1:8081",
-                    // --- ADICIONADO: DOMÍNIOS DE PRODUÇÃO PARA EVITAR ERRO DE CONEXÃO ---
                     "https://dietaexata.com.br",
                     "https://www.dietaexata.com.br",
-                    "https://celebrated-peony-751b18.netlify.app",
-                    "https://hilarious-heliotrope-b814dd.netlify.app"
+                    "http://dietaexata.com.br",
+                    "http://www.dietaexata.com.br",
+                    "http://localhost:5500",
+                    "http://127.0.0.1:5500"
                 )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD")
                 .allowedHeaders("*")
-                .allowCredentials(true);
+                .exposedHeaders("Authorization", "Content-Type")
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 }
