@@ -1,0 +1,16 @@
+# Forçar HTTPS
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_PATH} [L,R=301]
+
+# Garantir que o PHP tenha tempo suficiente para falar com o Railway
+<IfModule mod_php7.c>
+   php_value max_execution_time 60
+   php_value memory_limit 128M
+</IfModule>
+
+# Impedir que as pessoas vejam seus arquivos de log se sobrarem alguns
+<FilesMatch "\.(log|txt|jar)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

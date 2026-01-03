@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAGAMENTO PIX | DIETA EXATA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --neon: #00f2ff; --bg: #050505; --card: #0d0d0d; }
+        body { background: var(--bg); color: white; font-family: 'Rajdhani'; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #222; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 0 20px rgba(0,242,255,0.1); }
+        h1 { font-family: 'Orbitron'; color: var(--neon); font-size: 20px; margin-bottom: 20px; }
+        
+        .plan-selection { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
+        .plan-card { background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
+        .plan-card:hover { border-color: var(--neon); }
+        .plan-card.active { border-color: var(--neon); background: rgba(0, 242, 255, 0.05); box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); }
+        .plan-info { text-align: left; }
+        .plan-price { font-family: 'Orbitron'; color: var(--neon); font-size: 14px; }
+
+        .btn-gerar { width: 100%; padding: 16px; background: var(--neon); color: black; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; border-radius: 5px; transition: 0.3s; text-transform: uppercase; }
+        .btn-gerar:hover { box-shadow: 0 0 15px var(--neon); transform: scale(1.02); }
+        
+        #pix-area { display: none; margin-top: 20px; }
+        .qr-frame { background: white; padding: 10px; border-radius: 10px; display: inline-block; margin-bottom: 15px; }
+        .qr-frame img { width: 220px; display: block; }
+        .loader { display: none; color: var(--neon); margin: 20px 0; font-family: 'Orbitron'; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="setup-area">
+            <h1>ATIVAÇÃO DE CONTA</h1>
+            <p style="color: #888; margin-bottom: 20px;">Selecione o plano desejado:</p>
+            
+            <div class="plan-selection">
+                <div class="plan-card active" onclick="selecionarPlano('BRONZE', 19.99, this)">
+                    <div class="plan-info"><strong>BRONZE</strong><br><small style="color:#666">Acesso Essencial</small></div>
+                    <div class="plan-price">R$ 19,99</div>
+                </div>
+                <div class="plan-card" onclick="selecionarPlano('PRATA', 49.99, this)">
+                    <div class="plan-info"><strong>PRATA</strong><br><small style="color:#666">Acesso Premium</small></div>
+                    <div class="plan-price">R$ 49,99</div>
+                </div>
+                <div class="plan-card" onclick="selecionarPlano('OURO', 79.99, this)">
+                    <div class="plan-info"><strong>OURO</strong><br><small style="color:#666">Acesso Vitalício</small></div>
+                    <div class="plan-price">R$ 79,99</div>
+                </div>
+            </div>
+            
+            <button class="btn-gerar" onclick="gerarPagamento()">GERAR PIX AGORA</button>
+        </div>
+
+        <div id="loader" class="loader">CONECTANDO AO TERMINAL RENDER...</div>
+
+        <div id="pix-area">
+            <h1>PAGUE COM PIX</h1>
+            <div class="qr-frame"><img id="qr-img" src="" alt="QR Code"></div>
+            <p style="font-size: 11px; color: #888; margin-bottom: 15px;">Escaneie o código acima para liberar seu acesso.</p>
+            <button class="btn-gerar" style="background:#222; color:white; margin-bottom:10px;" onclick="copiarCodigo()">COPIAR CÓDIGO PIX</button>
+            <button class="btn-gerar" style="background:transparent; border:1px solid #333; color:#666; font-size:10px;" onclick="location.reload()">ALTERAR PLANO</button>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = urlParams.get('email');
+        let planoAtivo = "BRONZE";
+        let valorAtivo = 19.99;
+        let pixCopiaEcola = "";
+
+        function selecionarPlano(plano, valor, el) {
+            planoAtivo = plano;
+            valorAtivo = valor;
+            document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        async function gerarPagamento() {
+            if (!email) return alert("Erro: E-mail não identificado.");
+            
+            document.getElementById('setup-area').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+
+            try {
+                const response = await fetch('api_bridge.php?path=api/pagamentos/pix', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: email, 
+                        plano: planoAtivo,
+                        valor: valorAtivo 
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.qrCodeBase64) {
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('pix-area').style.display = 'block';
+                    document.getElementById('qr-img').src = "data:image/png;base64," + data.qrCodeBase64;
+                    pixCopiaEcola = data.pixCopiaEcola;
+                } else {
+                    throw new Error(data.erro || "Falha ao gerar dados do Mercado Pago.");
+                }
+            } catch (err) {
+                alert("Erro: " + err.message);
+                location.reload();
+            }
+        }
+
+        function copiarCodigo() {
+            navigator.clipboard.writeText(pixCopiaEcola);
+            alert("Código PIX copiado com sucesso!");
+        }
+    </script>
+</body>
+</html>
