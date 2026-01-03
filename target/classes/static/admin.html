@@ -109,11 +109,15 @@
     </div>
 
     <script>
+        // DEFINA AQUI A URL DO SEU RENDER PARA NÃO DEPENDER DO PHP
+        const API_BASE = "https://dieta-exata-backend-1.onrender.com/api/usuarios";
+        
         let usuarioSelecionado = null;
         let tipoAcao = 'SALDO';
 
         function verificarAcesso() {
             const user = JSON.parse(localStorage.getItem('usuarioLogado'));
+            // O Admin Mestre deve poder acessar
             if (!user || user.email !== 'toiiss@dietaexata.com.br') {
                 alert("ACESSO NEGADO: Apenas o Administrador Mestre pode acessar esta área.");
                 window.location.href = 'index.html';
@@ -125,7 +129,8 @@
         async function carregarDadosAdmin() {
             if (!verificarAcesso()) return;
             try {
-                const res = await fetch('api_bridge.php?path=api/usuarios/todos');
+                // Chamada direta para o Render
+                const res = await fetch(`${API_BASE}/todos`);
                 const users = await res.json();
                 
                 const tableBody = document.getElementById('user-table-body');
@@ -170,22 +175,15 @@
 
             } catch (err) { 
                 console.error("Erro:", err);
-                document.getElementById('user-table-body').innerHTML = '<tr><td colspan="5" style="color:red; text-align:center;">Erro ao conectar com o Terminal Render. Verifique o serviço.</td></tr>';
+                document.getElementById('user-table-body').innerHTML = '<tr><td colspan="5" style="color:red; text-align:center;">Erro ao conectar com o Render.</td></tr>';
             }
         }
 
-        // FUNÇÃO CORRIGIDA PARA ATIVAÇÃO
         async function ativarUsuario(email) {
             if(!confirm(`Deseja ativar e processar upgrade para ${email}?`)) return;
             
-            const btn = event.target;
-            const textoOriginal = btn.innerText;
-            btn.innerText = "...";
-            btn.disabled = true;
-
             try {
-                // Tentamos o endpoint de upgrade que você já tem no Java
-                const res = await fetch('api_bridge.php?path=api/usuarios/processar-upgrade', {
+                const res = await fetch(`${API_BASE}/processar-upgrade`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ email: email, metodo: 'ADMIN_MANUAL' })
@@ -195,14 +193,10 @@
                     alert("Usuário Ativado com Sucesso!"); 
                     carregarDadosAdmin(); 
                 } else {
-                    const errorData = await res.json();
-                    alert("Erro ao ativar: " + (errorData.erro || "Falha no Terminal"));
+                    alert("Erro ao ativar usuário no servidor.");
                 }
             } catch (err) { 
-                alert("Erro de conexão com o Render. Tente novamente."); 
-            } finally {
-                btn.innerText = textoOriginal;
-                btn.disabled = false;
+                alert("Falha de comunicação com o servidor."); 
             }
         }
 
@@ -210,7 +204,7 @@
             usuarioSelecionado = email;
             tipoAcao = tipo;
             document.getElementById('modal-user-email').innerText = email;
-            document.getElementById('modal-titulo').innerText = tipo === 'SALDO' ? 'AJUSTAR SALDO' : 'ESTORNAR PIX / VALOR';
+            document.getElementById('modal-titulo').innerText = tipo === 'SALDO' ? 'AJUSTAR SALDO' : 'ESTORNO DE VALOR';
             document.getElementById('estorno-info').style.display = tipo === 'ESTORNO' ? 'block' : 'none';
             document.getElementById('novo-saldo').value = valor;
             document.getElementById('modalSaldo').style.display = 'flex';
@@ -220,31 +214,31 @@
 
         async function salvarAcao() {
             const valor = parseFloat(document.getElementById('novo-saldo').value);
-            const path = tipoAcao === 'SALDO' ? 'api/usuarios/ajustar-saldo' : 'api/usuarios/estornar';
+            const endpoint = tipoAcao === 'SALDO' ? 'ajustar-saldo' : 'estornar';
 
             try {
-                const res = await fetch(`api_bridge.php?path=${path}`, {
+                const res = await fetch(`${API_BASE}/${endpoint}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ email: usuarioSelecionado, valor: valor })
                 });
 
                 if(res.ok) {
-                    alert("Operação realizada!");
+                    alert("Operação concluída!");
                     fecharModal();
                     carregarDadosAdmin();
                 }
-            } catch (err) { alert("Erro na conexão."); }
+            } catch (err) { alert("Erro ao processar."); }
         }
 
         async function eliminarUsuario(email) {
-            if(!confirm(`⚠️ ATENÇÃO: Deseja apagar ${email}?`)) return;
+            if(!confirm(`⚠️ ATENÇÃO: Deseja apagar definitivamente ${email}?`)) return;
             try {
-                const res = await fetch(`api_bridge.php?path=api/usuarios/deletar/${email}`, {
+                const res = await fetch(`${API_BASE}/deletar/${email}`, {
                     method: 'DELETE'
                 });
                 if(res.ok) {
-                    alert("Removido.");
+                    alert("Usuário removido.");
                     carregarDadosAdmin();
                 }
             } catch (err) { alert("Erro ao deletar."); }
