@@ -15,7 +15,7 @@
         /* Sidebar */
         .sidebar { width: 250px; background: #000; border-right: 1px solid #222; padding: 30px 20px; display: flex; flex-direction: column; gap: 20px; }
         .logo { font-family: 'Orbitron'; color: var(--neon); font-size: 20px; text-align: center; margin-bottom: 30px; text-shadow: 0 0 10px var(--neon); }
-        .nav-link { color: #888; text-decoration: none; padding: 12px; border-radius: 5px; transition: 0.3s; font-family: 'Orbitron'; font-size: 13px; border-left: 3px solid transparent; }
+        .nav-link { color: #888; text-decoration: none; padding: 12px; border-radius: 5px; transition: 0.3s; font-family: 'Orbitron'; font-size: 13px; border-left: 3px solid transparent; cursor: pointer; }
         .nav-link:hover, .nav-link.active { background: #111; color: white; border-left-color: var(--neon); }
         .logout { margin-top: auto; color: #ff4444; cursor: pointer; }
 
@@ -43,6 +43,11 @@
         .transfer-input { background: #000; border: 1px solid #333; color: white; padding: 10px; border-radius: 5px; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
         .transfer-input:focus { border-color: var(--neon); outline: none; }
 
+        /* Tabelas de Rede e Financeiro (O que estava faltando) */
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        .data-table th { color: var(--neon); text-align: left; padding: 10px; border-bottom: 1px solid #222; font-family: 'Orbitron'; font-size: 11px; }
+        .data-table td { padding: 10px; border-bottom: 1px solid #111; }
+
         @media (max-width: 768px) { body { flex-direction: column; } .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #222; } }
     </style>
 </head>
@@ -50,15 +55,15 @@
 
     <aside class="sidebar">
         <div class="logo">DIETA EXATA</div>
-        <a href="dashboard.html" class="nav-link active">DASHBOARD</a>
+        <a onclick="showSection('main-dash')" class="nav-link active" id="btn-dash">DASHBOARD</a>
         <a href="configurar-dieta.html" class="nav-link">MINHA DIETA</a>
-        <a href="rede.html" class="nav-link">MINHA REDE</a>
-        <a href="financeiro.html" class="nav-link">FINANCEIRO</a>
+        <a onclick="showSection('rede-section')" class="nav-link" id="btn-rede">MINHA REDE</a>
+        <a onclick="showSection('financeiro-section')" class="nav-link" id="btn-fin">FINANCEIRO</a>
         <a href="upgrade.html" class="nav-link" style="color: var(--gold);">UPGRADE OURO</a>
         <div class="nav-link logout" onclick="logout()">SAIR DO TERMINAL</div>
     </aside>
 
-    <main class="main">
+    <main class="main" id="main-dash">
         <header class="header">
             <div class="user-info">
                 <h2 id="user-name">Carregando...</h2>
@@ -84,7 +89,7 @@
             </div>
         </div>
 
-        <div class="content-flex">
+        <div class="content-flex section-toggle" id="content-main">
             <div class="diet-box">
                 <h3 style="font-family: 'Orbitron'; margin-top: 0;">PROTOCOLO ATUAL</h3>
                 <div id="diet-status">
@@ -99,25 +104,61 @@
                 <input type="email" id="transf-email" class="transfer-input" placeholder="E-mail do destinatário">
                 <input type="number" id="transf-valor" class="transfer-input" placeholder="Valor (R$)">
                 <button class="btn-action" style="background: #1a1a1a; color: var(--neon); border: 1px solid var(--neon);" onclick="executarTransferencia()">EFETUAR TRANSFERÊNCIA</button>
+                
+                <button class="btn-action" style="background: #27ae60; color: white; margin-top: 10px;" onclick="window.open('https://wa.me/SEUNUMERO')">FALAR COM NUTRI</button>
             </div>
 
             <div class="affiliate-box">
                 <h3 style="font-family: 'Orbitron'; margin-top: 0; color: var(--neon);">LINK DE AFILIADO</h3>
                 <p style="font-size: 14px; color: #ccc;">Compartilhe seu link e ganhe comissões sobre cada upgrade na sua rede.</p>
-                <div class="copy-link" id="affiliate-link" onclick="copyLink()">
-                    Carregando link...
-                </div>
+                <div class="copy-link" id="affiliate-link" onclick="copyLink()">Carregando link...</div>
                 <small style="color: #666;">Clique no box acima para copiar</small>
             </div>
+        </div>
+
+        <div id="rede-section" class="diet-box section-toggle" style="display: none; margin-top: 20px;">
+            <h3 style="font-family: 'Orbitron'; color: var(--neon);">MINHA REDE (NÍVEL 1)</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>NOME</th>
+                        <th>PLANO</th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+                <tbody id="rede-lista"></tbody>
+            </table>
+        </div>
+
+        <div id="financeiro-section" class="diet-box section-toggle" style="display: none; margin-top: 20px;">
+            <h3 style="font-family: 'Orbitron'; color: var(--neon);">DETALHAMENTO FINANCEIRO</h3>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <div><small>Ganhos Diretos:</small><br><b id="ganho-dir" style="color: var(--green);">R$ 0,00</b></div>
+                <div><small>Ganhos de Rede:</small><br><b id="ganho-ind" style="color: var(--gold);">R$ 0,00</b></div>
+            </div>
+            <p style="font-size: 12px; color: #888;">As comissões são pagas instantaneamente após a aprovação do PIX pela sua rede.</p>
         </div>
     </main>
 
     <script>
-        // Verificação de Sessão
         const sessao = localStorage.getItem('usuarioLogado');
         if (!sessao) window.location.href = 'index.html';
-
         const user = JSON.parse(sessao);
+
+        // Função para alternar visualização sem sair da página
+        function showSection(sectionId) {
+            document.querySelectorAll('.section-toggle').forEach(s => s.style.display = 'none');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
+            if (sectionId === 'main-dash') {
+                document.getElementById('content-main').style.display = 'flex';
+                document.getElementById('btn-dash').classList.add('active');
+            } else {
+                document.getElementById(sectionId).style.display = 'block';
+                if(sectionId === 'rede-section') document.getElementById('btn-rede').classList.add('active');
+                if(sectionId === 'financeiro-section') document.getElementById('btn-fin').classList.add('active');
+            }
+        }
 
         async function loadDashboardData() {
             try {
@@ -130,92 +171,64 @@
                     document.getElementById('user-plan').innerText = currentUser.plano || "BRONZE";
                     document.getElementById('balance').innerText = `R$ ${parseFloat(currentUser.saldoDisponivel || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                     
-                    // Soma ganhos diretos e indiretos para o Total
                     const ganhosTotais = (currentUser.ganhosDiretos || 0) + (currentUser.ganhosIndiretos || 0);
                     document.getElementById('total-earnings').innerText = `R$ ${ganhosTotais.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                     
-                    // Conta indicados diretos (Nível 1)
+                    // Financeiro Detalhado
+                    document.getElementById('ganho-dir').innerText = `R$ ${parseFloat(currentUser.ganhosDiretos || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                    document.getElementById('ganho-ind').innerText = `R$ ${parseFloat(currentUser.ganhosIndiretos || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+                    // Rede e Tabela
                     const indicados = users.filter(u => u.indicadoPor && u.indicadoPor.toLowerCase() === currentUser.email.toLowerCase());
                     document.getElementById('referrals').innerText = indicados.length;
+                    
+                    let listaHtml = "";
+                    indicados.forEach(i => {
+                        listaHtml += `<tr><td>${i.nome}</td><td>${i.plano}</td><td style="color:var(--green)">ATIVO</td></tr>`;
+                    });
+                    document.getElementById('rede-lista').innerHTML = listaHtml || "<tr><td colspan='3'>Nenhum indicado direto.</td></tr>";
 
-                    // Geração dinâmica do link de convite
                     const link = `${window.location.origin}/cadastro.html?ref=${encodeURIComponent(currentUser.email)}`;
                     document.getElementById('affiliate-link').innerText = link;
 
                     if (currentUser.dietaAtual) {
                         document.getElementById('diet-status').innerHTML = `
                             <p style="color: var(--green);">● Protocolo de Biohacking Ativo</p>
-                            <p style="font-size: 14px; color: #ccc;">Sua dieta personalizada está pronta para consulta.</p>
                             <button class="btn-action" onclick="location.href='configurar-dieta.html'">VER PROTOCOLO</button>
                         `;
                     }
-                    // Atualiza a sessão local com dados novos do servidor
                     localStorage.setItem('usuarioLogado', JSON.stringify(currentUser));
                 }
-            } catch (err) {
-                console.error("Erro ao carregar Dashboard:", err);
-            }
+            } catch (err) { console.error("Erro:", err); }
         }
 
+        // ... (Funções de Transferência e Copiar Link permanecem as mesmas que você já tem)
         async function executarTransferencia() {
             const emailDest = document.getElementById('transf-email').value.trim();
             const valor = parseFloat(document.getElementById('transf-valor').value);
             const remetente = JSON.parse(localStorage.getItem('usuarioLogado'));
-
-            if (!emailDest || isNaN(valor) || valor <= 0) {
-                alert("Preencha o e-mail e um valor válido.");
-                return;
-            }
-
-            if (valor > remetente.saldoDisponivel) {
-                alert("Saldo insuficiente para esta operação.");
-                return;
-            }
+            if (!emailDest || isNaN(valor) || valor <= 0) return alert("Preencha os dados corretamente.");
+            if (valor > remetente.saldoDisponivel) return alert("Saldo insuficiente.");
 
             try {
                 const res = await fetch('api_bridge.php?path=api/usuarios/transferir', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        emailOrigem: remetente.email,
-                        emailDestino: emailDest,
-                        valor: valor
-                    })
+                    body: JSON.stringify({ emailOrigem: remetente.email, emailDestino: emailDest, valor: valor })
                 });
-
-                if (res.ok) {
-                    alert("SISTEMA: Transferência de créditos concluída com sucesso!");
-                    loadDashboardData();
-                    document.getElementById('transf-email').value = '';
-                    document.getElementById('transf-valor').value = '';
-                } else {
-                    const erroMsg = await res.text();
-                    alert("FALHA: " + (erroMsg || "Destinatário não encontrado."));
-                }
-            } catch (err) {
-                alert("ERRO DE CONEXÃO: Terminal central offline.");
-            }
+                if (res.ok) { alert("Transferência realizada!"); loadDashboardData(); }
+                else { alert("Falha na transferência."); }
+            } catch (err) { alert("Erro de conexão."); }
         }
 
         function copyLink() {
             const link = document.getElementById('affiliate-link').innerText;
             navigator.clipboard.writeText(link).then(() => {
-                const box = document.getElementById('affiliate-link');
-                const originalText = box.innerText;
-                box.innerText = "COPIADO COM SUCESSO!";
-                box.style.color = "var(--green)";
-                setTimeout(() => { 
-                    box.innerText = originalText;
-                    box.style.color = "white";
-                }, 2000);
+                alert("Link copiado!");
             });
         }
 
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'index.html';
-        }
-
+        function logout() { localStorage.clear(); window.location.href = 'index.html'; }
         window.onload = loadDashboardData;
     </script>
 </body>

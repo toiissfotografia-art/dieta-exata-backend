@@ -5,127 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MINHA REDE | DIETA EXATA</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
-    <script src="config.js"></script>
     <style>
         :root { --neon: #00f2ff; --bg: #050505; --card: #0d0d0d; --green: #2ecc71; }
         body { background: var(--bg); color: white; font-family: 'Rajdhani'; margin: 0; display: flex; min-height: 100vh; }
-        
-        /* Sidebar padrão do sistema */
-        .sidebar { width: 250px; background: #000; border-right: 1px solid #222; padding: 30px 20px; display: flex; flex-direction: column; gap: 20px; }
-        .logo { font-family: 'Orbitron'; color: var(--neon); font-size: 20px; text-align: center; margin-bottom: 30px; }
-        .nav-link { color: #888; text-decoration: none; padding: 12px; border-radius: 5px; font-family: 'Orbitron'; font-size: 13px; }
+        .sidebar { width: 250px; background: #000; border-right: 1px solid #222; padding: 30px 20px; display: flex; flex-direction: column; gap: 10px; }
+        .nav-link { color: #888; text-decoration: none; padding: 12px; border-radius: 5px; font-family: 'Orbitron'; font-size: 11px; }
         .nav-link.active { background: #111; color: white; border-left: 3px solid var(--neon); }
-
         .main { flex: 1; padding: 40px; }
-        h1 { font-family: 'Orbitron'; color: var(--neon); }
+        h1 { font-family: 'Orbitron'; color: var(--neon); font-size: 22px; }
+        
+        .network-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .stat-box { background: var(--card); padding: 20px; border-radius: 10px; border: 1px solid #222; text-align: center; }
+        .stat-box span { display: block; color: #888; font-size: 12px; text-transform: uppercase; }
+        .stat-box b { font-family: 'Orbitron'; font-size: 20px; color: var(--neon); }
 
-        /* Cards de Níveis */
-        .network-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
-        .level-card { background: var(--card); border: 1px solid #222; padding: 20px; border-radius: 15px; text-align: center; }
-        .level-card h3 { color: var(--neon); margin: 0; font-size: 14px; font-family: 'Orbitron'; }
-        .level-card .count { font-size: 32px; font-weight: bold; margin: 10px 0; }
-
-        /* Tabela de Indicados */
-        .table-container { background: var(--card); border: 1px solid #222; border-radius: 15px; padding: 20px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { padding: 15px; color: #888; border-bottom: 1px solid #222; font-family: 'Orbitron'; font-size: 12px; }
-        td { padding: 15px; border-bottom: 1px solid #111; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 10px; overflow: hidden; }
+        th { background: #111; color: var(--neon); font-family: 'Orbitron'; font-size: 12px; padding: 15px; text-align: left; }
+        td { padding: 15px; border-bottom: 1px solid #222; font-size: 14px; }
         .status-active { color: var(--green); font-weight: bold; }
         .status-expired { color: #ff4444; }
     </style>
 </head>
 <body>
-
     <aside class="sidebar">
-        <div class="logo">DIETA EXATA</div>
+        <div class="logo" style="font-family:'Orbitron'; color:var(--neon); margin-bottom:30px; text-align:center;">DIETA EXATA</div>
         <a href="dashboard.html" class="nav-link">DASHBOARD</a>
         <a href="rede.html" class="nav-link active">MINHA REDE</a>
         <a href="financeiro.html" class="nav-link">FINANCEIRO</a>
-        <div class="nav-link" onclick="location.href='index.html'" style="cursor:pointer; color: #ff4444; margin-top: auto;">SAIR</div>
+        <a href="dashboard.html" class="nav-link">VOLTAR</a>
     </aside>
 
     <main class="main">
-        <h1>EXPANSÃO DE REDE</h1>
-        <p style="color: #888;">Acompanhe o crescimento da sua organização em 3 níveis.</p>
-
+        <h1>GENEALOGIA DA REDE</h1>
         <div class="network-stats">
-            <div class="level-card">
-                <h3>NÍVEL 1</h3>
-                <div class="count" id="n1-count">0</div>
-                <small>Indicações Diretas</small>
-            </div>
-            <div class="level-card">
-                <h3>NÍVEL 2</h3>
-                <div class="count" id="n2-count">0</div>
-                <small>Indicações Indiretas</small>
-            </div>
-            <div class="level-card">
-                <h3>NÍVEL 3</h3>
-                <div class="count" id="n3-count">0</div>
-                <small>Profundidade</small>
-            </div>
+            <div class="stat-box"><span id="total-direct">DIRETOS (N1)</span><b id="count-n1">0</b></div>
+            <div class="stat-box"><span>STATUS DA REDE</span><b style="color: var(--green);">SISTEMA ATIVO</b></div>
         </div>
 
-        <div class="table-container">
-            <h3 style="font-family: 'Orbitron'; font-size: 16px;">MEMBROS DIRETOS (NÍVEL 1)</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>NOME</th>
-                        <th>PLANO</th>
-                        <th>CADASTRO</th>
-                        <th>STATUS</th>
-                    </tr>
-                </thead>
-                <tbody id="lista-rede">
-                    </tbody>
-            </table>
-        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>AFILIADO</th>
+                    <th>PLANO</th>
+                    <th>CADASTRO</th>
+                    <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody id="network-table">
+                </tbody>
+        </table>
     </main>
 
     <script>
-        async function carregarRede() {
-            const sessao = JSON.parse(localStorage.getItem('usuarioLogado'));
-            if (!sessao) window.location.href = 'index.html';
+        const user = JSON.parse(localStorage.getItem('usuarioLogado'));
+        
+        async function loadNetwork() {
+            const res = await fetch('api_bridge.php?path=api/usuarios/todos');
+            const users = await res.json();
+            const directMembers = users.filter(u => u.indicadoPor && u.indicadoPor.toLowerCase() === user.email.toLowerCase());
+            
+            document.getElementById('count-n1').innerText = directMembers.length;
+            const table = document.getElementById('network-table');
+            table.innerHTML = "";
 
-            try {
-                // Puxa todos os usuários para filtrar os indicados
-                const res = await fetch('api_bridge.php?path=api/usuarios/todos');
-                const todosUsuarios = await res.json();
-                
-                // Puxa o usuário atual atualizado
-                const eu = todosUsuarios.find(u => u.email === sessao.email);
-
-                // Atualiza os contadores baseados no seu JSON
-                document.getElementById('n1-count').innerText = eu.nivel1count || 0;
-                document.getElementById('n2-count').innerText = eu.nivel2count || 0;
-                document.getElementById('n3-count').innerText = eu.nivel3count || 0;
-
-                // Filtra apenas quem eu indiquei (Nível 1)
-                const diretos = todosUsuarios.filter(u => u.indicadoPor === eu.email);
-                
-                const tabela = document.getElementById('lista-rede');
-                tabela.innerHTML = diretos.map(user => {
-                    const dataExp = new Date(user.dataExpiracao);
-                    const ativo = dataExp > new Date();
-                    return `
-                        <tr>
-                            <td>${user.nome}</td>
-                            <td><span style="color: var(--neon)">${user.plano}</span></td>
-                            <td>${user.dataUltimaDieta || '---'}</td>
-                            <td class="${ativo ? 'status-active' : 'status-expired'}">
-                                ${ativo ? 'ATIVO' : 'EXPIRADO'}
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-
-            } catch (err) {
-                console.error("Erro ao carregar rede:", err);
-            }
+            directMembers.forEach(m => {
+                const dataExp = new Date(m.dataExpiracao);
+                const isAtivo = dataExp > new Date();
+                table.innerHTML += `
+                    <tr>
+                        <td>${m.nome}<br><small style="color:#666">${m.email}</small></td>
+                        <td>${m.plano || 'BRONZE'}</td>
+                        <td>${new Date(m.dataCadastro).toLocaleDateString()}</td>
+                        <td class="${isAtivo ? 'status-active' : 'status-expired'}">${isAtivo ? 'ATIVO' : 'EXPIRADO'}</td>
+                    </tr>
+                `;
+            });
         }
-
-        window.onload = carregarRede;
+        loadNetwork();
     </script>
 </body>
 </html>

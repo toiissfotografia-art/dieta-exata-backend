@@ -48,17 +48,16 @@
             <h1>PAGUE COM PIX</h1>
             <div class="qr-frame"><img id="qr-img" src="" alt="QR Code"></div>
             <p id="status-pagamento" style="color: var(--neon); font-size: 12px; font-family: 'Orbitron';">AGUARDANDO PAGAMENTO...</p>
-            <button class="btn-gerar" style="background:#222; color:white; margin-bottom:10px;" onclick="copiarCodigo()">COPIAR CÓDIGO PIX</button>
+            <button id="btnCopiar" class="btn-gerar" style="background:#222; color:white; margin-bottom:10px;" onclick="copiarCodigo()">COPIAR CÓDIGO PIX</button>
         </div>
     </div>
 
     <script>
-        // Pega o e-mail que veio da tela de cadastro/login
         const urlParams = new URLSearchParams(window.location.search);
         let email = urlParams.get('email');
         let planoAtivo = "BRONZE";
-        let valorAtivo = "19.99"; // String para o seu Java ler como BigDecimal
-        let pixCopiaEcola = "";
+        let valorAtivo = "19.99"; 
+        let pixCopiaEcola = ""; // Variável que receberá o código do Java
 
         function selecionarPlano(plano, valor, el) {
             planoAtivo = plano;
@@ -73,7 +72,6 @@
             document.getElementById('loader').style.display = 'block';
 
             try {
-                // Envia exatamente o que o seu @PostMapping("/pix") espera: Map<String, String>
                 const response = await fetch('api_bridge.php?path=api/pagamentos/pix', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -90,9 +88,10 @@
                     document.getElementById('loader').style.display = 'none';
                     document.getElementById('pix-area').style.display = 'block';
                     document.getElementById('qr-img').src = "data:image/png;base64," + data.qrCodeBase64;
-                    pixCopiaEcola = data.pixCopiaEcola;
                     
-                    // Inicia verificação automática
+                    // CORREÇÃO: Garante que a variável pegue o código do campo 'pixCopiaEcola' vindo do Java
+                    pixCopiaEcola = data.pixCopiaEcola; 
+                    
                     setInterval(verificarStatus, 5000);
                 } else {
                     alert("Erro na API: " + (data.erro || "Falha desconhecida"));
@@ -106,12 +105,15 @@
 
         async function verificarStatus() {
             try {
-                // Verifica na sua rota de usuários se a data de expiração mudou (pelo Webhook)
                 const res = await fetch(`api_bridge.php?path=api/usuarios/todos`);
                 const usuarios = await res.json();
                 const u = usuarios.find(user => user.email.toLowerCase() === email.toLowerCase());
                 
-                if (u && new Date(u.dataExpiracao) > new Date()) {
+                // Tolerância de 2 minutos para fuso horário
+                const agora = new Date();
+                agora.setMinutes(agora.getMinutes() - 2);
+
+                if (u && u.dataExpiracao && new Date(u.dataExpiracao) > agora) {
                     document.getElementById('status-pagamento').innerText = "PAGO COM SUCESSO!";
                     document.getElementById('status-pagamento').style.color = "#00ff00";
                     setTimeout(() => { window.location.href = "dashboard.html"; }, 2000);
@@ -119,9 +121,33 @@
             } catch (e) { console.log("Checando..."); }
         }
 
+        // FUNÇÃO DE COPIAR CORRIGIDA PARA SER PROFISSIONAL
         function copiarCodigo() {
-            navigator.clipboard.writeText(pixCopiaEcola);
-            alert("Código Copiado!");
+            if (!pixCopiaEcola) {
+                alert("Código ainda não carregado.");
+                return;
+            }
+
+            navigator.clipboard.writeText(pixCopiaEcola).then(() => {
+                const btn = document.getElementById('btnCopiar');
+                const textoOriginal = btn.innerText;
+                btn.innerText = "COPIADO COM SUCESSO!";
+                btn.style.color = "#00ff00";
+                
+                setTimeout(() => {
+                    btn.innerText = textoOriginal;
+                    btn.style.color = "white";
+                }, 2500);
+            }).catch(err => {
+                // Fallback caso o navegador bloqueie a Clipboard API
+                const input = document.createElement("input");
+                input.value = pixCopiaEcola;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand("copy");
+                document.body.removeChild(input);
+                alert("Código Copiado!");
+            });
         }
     </script>
 </body>
