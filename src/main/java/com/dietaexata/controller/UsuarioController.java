@@ -89,6 +89,27 @@ public class UsuarioController {
         }
     }
 
+    @PostMapping("/pagamentos/webhook")
+    public ResponseEntity<?> webhookPagamento(@RequestBody Map<String, Object> payload) {
+        try {
+            String email = (String) payload.get("external_reference"); 
+            
+            if (email != null) {
+                Usuario u = repository.findByEmail(email);
+                if (u != null) {
+                    u.setPlano("OURO"); 
+                    u.setDataExpiracao(LocalDateTime.now().plusDays(30));
+                    repository.saveAndFlush(u);
+                    processarGanhosRede(u);
+                    return ResponseEntity.ok("{\"mensagem\":\"Pagamento processado com sucesso!\"}");
+                }
+            }
+            return ResponseEntity.status(404).body("{\"erro\":\"Usuario não identificado\"}");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
     @PostMapping("/processar-upgrade")
     public ResponseEntity<?> processarUpgrade(@RequestBody Map<String, String> payload) {
         try {
@@ -104,8 +125,8 @@ public class UsuarioController {
             if ("ADMIN_MANUAL".equalsIgnoreCase(metodo)) {
                 u.setPlano("OURO");
                 u.setDataExpiracao(LocalDateTime.now().plusDays(30));
-                repository.save(u);
-                processarGanhosRede(u); // Dispara a lógica de bônus do seu código
+                repository.saveAndFlush(u);
+                processarGanhosRede(u);
                 return ResponseEntity.ok(Map.of("mensagem", "Usuário ativado via Admin!"));
             }
 
@@ -116,8 +137,7 @@ public class UsuarioController {
                 u.setSaldoDisponivel(saldo - 197.0);
                 u.setPlano("OURO");
                 u.setDataExpiracao(LocalDateTime.now().plusDays(30));
-                repository.save(u);
-                processarGanhosRede(u); 
+                repository.saveAndFlush(u);
                 return ResponseEntity.ok("{\"mensagem\":\"Upgrade realizado!\"}");
             }
             
@@ -158,8 +178,8 @@ public class UsuarioController {
                 .findFirst().orElse(null);
         if (u != null) {
             u.setDataExpiracao(LocalDateTime.now().plusDays(30));
-            if (u.getPlano() == null || u.getPlano().isEmpty()) u.setPlano("BRONZE");
-            repository.save(u);
+            if (u.getPlano() == null || u.getPlano().isEmpty()) u.setPlano("OURO");
+            repository.saveAndFlush(u);
             processarGanhosRede(u);
         }
     }
@@ -207,7 +227,9 @@ public class UsuarioController {
             if (destino == null) return ResponseEntity.status(404).body("Destinatário não encontrado no sistema.");
 
             double saldoAtual = Optional.ofNullable(origem.getSaldoDisponivel()).orElse(0.0);
-            if (saldoAtual < valor) return ResponseEntity.badRequest().body("Saldo insuficiente.");
+            if (saldoAtual < valor) {
+                return ResponseEntity.badRequest().body("Saldo insuficiente.");
+            }
 
             origem.setSaldoDisponivel(saldoAtual - valor);
             destino.setSaldoDisponivel(Optional.ofNullable(destino.getSaldoDisponivel()).orElse(0.0) + valor);
@@ -240,19 +262,16 @@ public class UsuarioController {
         return ResponseEntity.status(404).build();
     }
 
-    // --- RESTAURAÇÃO DA SUA LÓGICA DE MMN ORIGINAL (COM SEUS VALORES) ---
     private void processarGanhosRede(Usuario novo) {
         if (novo.getIndicadoPor() == null || novo.getIndicadoPor().isEmpty()) return;
 
         double valorPago;
         String planoStr = (novo.getPlano() != null) ? novo.getPlano().toUpperCase() : "BRONZE";
-        
-        // Mantendo os valores de referência do seu switch original
         switch (planoStr) {
             case "BRONZE" -> valorPago = 19.99;
             case "PRATA"  -> valorPago = 49.99;
             case "OURO"   -> valorPago = 79.99;
-            default       -> valorPago = 0.0;
+            default        -> valorPago = 0.0;
         }
         
         if (valorPago == 0) return;
@@ -263,8 +282,6 @@ public class UsuarioController {
 
         if (pai != null) {
             String planoPai = (pai.getPlano() != null) ? pai.getPlano().toUpperCase() : "BRONZE";
-            
-            // Lógica de bônus percentual que estava no seu código original
             double bonusN1 = switch (planoPai) {
                 case "OURO"   -> valorPago * 0.50;
                 case "PRATA"  -> valorPago * 0.25;
@@ -282,14 +299,11 @@ public class UsuarioController {
                 
                 if (avo != null) {
                     String planoAvo = (avo.getPlano() != null) ? avo.getPlano().toUpperCase() : "BRONZE";
-                    
-                    // Lógica de bônus fixo Nível 2 que estava no seu código original
                     double bonusN2 = switch (planoAvo) {
                         case "OURO"  -> 2.50;
                         case "PRATA" -> 1.50;
                         default      -> 1.00;
                     };
-                    
                     creditarValor(avo, bonusN2, false);
                     avo.setNivel2count(Optional.ofNullable(avo.getNivel2count()).orElse(0) + 1);
                     repository.save(avo);
