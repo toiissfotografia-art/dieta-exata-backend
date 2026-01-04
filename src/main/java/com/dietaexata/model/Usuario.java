@@ -35,6 +35,11 @@ public class Usuario {
     private Double ganhosIndiretos = 0.0;
     private Double saldo = 0.0; // Campo de apoio
 
+    // --- NOVA INCLUSÃO PARA RESOLVER O CONFLITO ---
+    // Este campo guardará o histórico total (os 119 reais, por exemplo)
+    // Enquanto o saldoDisponivel será zerado/abatido no saque.
+    private Double ganhosTotaisAcumulados = 0.0; 
+
     // Contadores de Rede MMN
     private Integer nivel1count = 0;
     private Integer nivel2count = 0;
@@ -46,7 +51,7 @@ public class Usuario {
     private String alertaMensagem;
     private String chavePix;
 
-    // --- GETTERS E SETTERS ---
+    // --- GETTERS E SETTERS (Mantendo todos os existentes e incluindo o novo) ---
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -83,6 +88,10 @@ public class Usuario {
 
     public Double getSaldo() { return saldo; }
     public void setSaldo(Double saldo) { this.saldo = saldo; }
+
+    // Getter e Setter do novo campo de histórico MMN
+    public Double getGanhosTotaisAcumulados() { return ganhosTotaisAcumulados; }
+    public void setGanhosTotaisAcumulados(Double ganhosTotaisAcumulados) { this.ganhosTotaisAcumulados = ganhosTotaisAcumulados; }
 
     public Integer getNivel1count() { return nivel1count; }
     public void setNivel1count(Integer nivel1count) { this.nivel1count = nivel1count; }

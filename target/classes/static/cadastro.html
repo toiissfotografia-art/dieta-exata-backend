@@ -91,11 +91,45 @@
             background: #080808;
         }
 
-        input:disabled {
-            background: #111;
-            color: #555;
-            cursor: not-allowed;
-            border-color: #1a1a1a;
+        /* ESTILO DOS CARDS DE PLANO */
+        .plan-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+            margin-top: 10px;
+        }
+
+        .plan-card {
+            background: #000;
+            border: 1px solid #222;
+            padding: 12px 5px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .plan-card.active {
+            border-color: var(--blue);
+            background: rgba(0, 242, 255, 0.05);
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
+        }
+
+        .plan-card .name {
+            display: block;
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+        }
+
+        .plan-card.active .name { color: var(--blue); }
+
+        .plan-card .price {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
         }
 
         .btn-register { 
@@ -162,6 +196,24 @@
         </div>
 
         <div class="input-group">
+            <label>Escolha seu Plano</label>
+            <div class="plan-selector">
+                <div class="plan-card active" onclick="selecionarPlano('BRONZE', this)">
+                    <span class="name">BRONZE</span>
+                    <span class="price">R$ 19,99</span>
+                </div>
+                <div class="plan-card" onclick="selecionarPlano('PRATA', this)">
+                    <span class="name">PRATA</span>
+                    <span class="price">R$ 49,99</span>
+                </div>
+                <div class="plan-card" onclick="selecionarPlano('OURO', this)">
+                    <span class="name">OURO</span>
+                    <span class="price">R$ 79,99</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group">
             <label>ID de Indicação (Indicador)</label>
             <input type="text" id="indicador" placeholder="Nenhum indicador" readonly>
         </div>
@@ -176,22 +228,45 @@
     </div>
 
     <script>
-        // Captura dados da URL e do LocalStorage para manter o MMN
+        // Variável global para armazenar o plano escolhido no cadastro
+        let planoEscolhido = "BRONZE";
+
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
             const refURL = urlParams.get('ref');
             const refStorage = localStorage.getItem('indicador_email');
-            const planoSelecionado = urlParams.get('plano') || localStorage.getItem('plano_escolhido') || 'BRONZE';
+            
+            // Verifica se já veio um plano pela URL para pré-selecionar
+            const planoUrl = urlParams.get('plano');
+            if (planoUrl) {
+                const cards = document.querySelectorAll('.plan-card');
+                cards.forEach(card => {
+                    if (card.innerText.includes(planoUrl.toUpperCase())) {
+                        selecionarPlano(planoUrl.toUpperCase(), card);
+                    }
+                });
+            }
 
             const indicadorFinal = refURL || refStorage;
             
             if (indicadorFinal) {
                 document.getElementById('indicador').value = indicadorFinal.toLowerCase().trim();
-                localStorage.setItem('indicador_email', indicadorFinal); // Garante a persistência
+                localStorage.setItem('indicador_email', indicadorFinal);
             } else {
                 document.getElementById('indicador').value = "Direto (Sem Indicador)";
             }
         };
+
+        function selecionarPlano(plano, elemento) {
+            planoEscolhido = plano;
+            // Remove classe active de todos
+            document.querySelectorAll('.plan-card').forEach(card => card.classList.remove('active'));
+            // Adiciona no clicado
+            elemento.classList.add('active');
+            // Salva no storage para garantir
+            localStorage.setItem('plano_escolhido', plano);
+            console.log("Plano selecionado no cadastro:", planoEscolhido);
+        }
 
         async function processarCadastro() {
             const btn = document.getElementById('btnCadastrar');
@@ -201,7 +276,6 @@
             const email = document.getElementById('email').value.trim();
             const senha = document.getElementById('senha').value;
             const indicadoPor = localStorage.getItem('indicador_email') || ""; 
-            const plano = localStorage.getItem('plano_escolhido') || "BRONZE";
 
             if (!nome || !email || !senha) {
                 status.style.color = "var(--red)";
@@ -219,11 +293,10 @@
                 email: email,
                 senha: senha,
                 indicadoPor: indicadoPor,
-                plano: plano
+                plano: planoEscolhido // Agora usa a variável do clique
             };
 
             try {
-                // Envio para o seu backend Java
                 const response = await fetch('api_bridge.php?path=api/usuarios/cadastrar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -236,11 +309,11 @@
                     status.style.color = "var(--neon)";
                     status.innerText = "CONTA CRIADA! Redirecionando para ativação...";
                     
-                    // Salva dados básicos para o PIX
-                    localStorage.setItem('usuarioLogado', JSON.stringify({ email: email, nome: nome, plano: plano }));
+                    localStorage.setItem('usuarioLogado', JSON.stringify({ email: email, nome: nome, plano: planoEscolhido }));
 
                     setTimeout(() => {
-                        window.location.href = `pix.html?email=${encodeURIComponent(email)}&plano=${plano}`;
+                        // Passa o plano escolhido via URL para a página de PIX
+                        window.location.href = `pix.html?email=${encodeURIComponent(email)}&plano=${planoEscolhido}`;
                     }, 2000);
                 } else {
                     throw new Error(result || "Erro ao cadastrar.");

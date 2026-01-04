@@ -13,6 +13,14 @@ const CONFIG = {
     API_DELETAR: 'api_bridge.php?path=api/usuarios/deletar', 
     API_AJUSTAR_SALDO: 'api_bridge.php?path=api/usuarios/ajustar-saldo',
     
+    // --- ROTAS DE SAQUE E FINANCEIRO (INCLUÍDAS PARA CONEXÃO MMN) ---
+    // Esta rota dispara a subtração no todos.json e gravação no saques_gerais.json
+    API_SOLICITAR_SAQUE: 'api_bridge.php?path=api/usuarios/admin/solicitar-saque',
+    
+    // Rotas para o Painel do Admin Master gerir os pagamentos
+    API_LISTAR_SAQUES: 'api_bridge.php?path=api/usuarios/admin/saques-pendentes',
+    API_FINALIZAR_SAQUE: 'api_bridge.php?path=api/usuarios/admin/finalizar-saque',
+
     // Rotas de Pagamento e Planos
     API_PIX: 'api_bridge.php?path=api/pagamentos/pix',
     API_PLANOS: 'api_bridge.php?path=api/usuarios/todos',

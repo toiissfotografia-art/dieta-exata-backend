@@ -3,169 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ativação Dieta Exata</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Ativação de Conta | Dieta Exata</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    
     <script src="config.js"></script>
+
     <style>
-        :root { --primary: #00f2ff; --success: #00ff88; --bg: #0a0a0a; --card: #161616; --text: #ffffff; --border: #262626; }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 420px; padding: 20px; }
-        .step-content { background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid var(--border); display: none; animation: fadeIn 0.3s ease; text-align: center; }
+        :root {
+            --primary: #00f2ff;
+            --success: #00ff88;
+            --bg: #050505;
+            --card: #0d0d0d;
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+            --border: #222;
+            --font-title: 'Orbitron', sans-serif;
+            --font-body: 'Rajdhani', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container { width: 100%; max-width: 440px; padding: 20px; }
+
+        .step-content {
+            background: var(--card);
+            padding: 32px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 0 30px rgba(0,242,255,0.05);
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
         .step-content.active { display: block; }
-        h1 { font-size: 22px; margin-bottom: 10px; color: var(--primary); }
-        .subtitle { font-size: 14px; color: #aaa; margin-bottom: 25px; line-height: 1.5; }
-        .plan-option { background: #212121; border: 2px solid transparent; padding: 15px; border-radius: 16px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; text-align: left; }
-        .plan-option.selected { border-color: var(--primary); background: rgba(0, 242, 255, 0.05); }
-        .plan-info { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 5px; }
-        .plan-bonus { font-size: 12px; color: var(--success); font-weight: 500; }
-        .btn { width: 100%; padding: 16px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; text-transform: uppercase; margin-top: 10px; }
+
+        h1 { 
+            font-family: var(--font-title); 
+            font-size: 18px; 
+            text-align: center; 
+            color: var(--primary); 
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .plan-option {
+            background: #111;
+            border: 1px solid #333;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .plan-option:hover { border-color: var(--primary); }
+        
+        .plan-option.selected { 
+            border-color: var(--primary); 
+            background: rgba(0, 242, 255, 0.08); 
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.15);
+        }
+
+        .plan-header { display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+        .plan-name { font-family: var(--font-title); font-weight: 700; font-size: 14px; color: #fff; }
+        .plan-price { font-family: var(--font-title); font-weight: 700; color: var(--primary); }
+        .plan-bonus { font-size: 13px; color: var(--success); margin-top: 5px; pointer-events: none; }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 8px;
+            border: none;
+            font-family: var(--font-title);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 15px;
+            text-transform: uppercase;
+        }
+
         .btn-primary { background: var(--primary); color: #000; }
-        .qr-wrapper { background: #fff; padding: 10px; border-radius: 16px; width: 200px; height: 200px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
-        #qr-code-img { width: 100%; height: 100%; display: none; }
-        .pix-box { background: #000; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 10px; color: #888; word-break: break-all; border: 1px dashed #444; margin-bottom: 10px; }
-        .loader { border: 3px solid #333; border-top: 3px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 15px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-primary:hover { box-shadow: 0 0 20px var(--primary); transform: translateY(-2px); }
+
+        .qr-wrapper {
+            background: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #qr-code-img { width: 100%; height: 100%; }
+
+        .pix-code-box {
+            background: #000;
+            padding: 14px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #666;
+            word-break: break-all;
+            border: 1px solid #222;
+            margin-bottom: 15px;
+        }
+
+        .loader {
+            border: 2px solid #222;
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 0.8s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="step1" class="step-content active">
-        <h1>Ative sua Conta</h1>
-        <p class="subtitle">Selecione seu plano. O sistema no Render pode levar 30 segundos para processar o primeiro pedido.</p>
-        
-        <div class="plan-option" onclick="selectPlan('BRONZE', 19.99, this)">
-            <div class="plan-info"><span>Plano Bronze</span><span>R$ 19,99</span></div>
-            <div class="plan-bonus">Bonus MMN: R$ 5,00 por indicação</div>
-        </div>
-        <div class="plan-option" onclick="selectPlan('PRATA', 49.99, this)">
-            <div class="plan-info"><span>Plano Prata</span><span>R$ 49,99</span></div>
-            <div class="plan-bonus">Bonus MMN: R$ 15,00 por indicação</div>
-        </div>
-        <div class="plan-option selected" onclick="selectPlan('OURO', 79.99, this)">
-            <div class="plan-info"><span>Plano Ouro</span><span>R$ 79,99</span></div>
-            <div class="plan-bonus">Bonus MMN: R$ 30,00 por indicação</div>
-        </div>
-
-        <button class="btn btn-primary" id="btn-gerar" onclick="gerarPagamento()">Gerar QR Code PIX</button>
-        
-        <div id="loading-area" style="display:none;">
-            <div class="loader"></div>
-            <p id="loading-text" style="font-size:12px; color:var(--primary); font-weight: bold;">LIGANDO SERVIDOR RENDER... (AGUARDE)</p>
-        </div>
-    </div>
-
-    <div id="step2" class="step-content">
-        <h1>Pagamento PIX</h1>
-        <p class="subtitle">Escaneie o QR Code. Sua ativação será detectada automaticamente.</p>
-        <div class="qr-wrapper"><img id="qr-code-img" src="" alt="QR PIX"></div>
-        <div class="pix-box" id="payload-pix">Gerando código...</div>
-        <button class="btn btn-primary" onclick="copiarCodigo()">Copiar Código PIX</button>
-        <p style="font-size: 11px; color: var(--success); margin-top: 15px; font-weight: 600;">MONITORANDO PAGAMENTO...</p>
-    </div>
-
-    <div id="step3" class="step-content">
-        <div style="font-size: 40px; margin-bottom: 15px;">✅</div>
-        <h1>Pagamento Confirmado!</h1>
-        <p class="subtitle">Detectamos sua transação de <strong id="plano-confirmado">...</strong> no sistema.</p>
-        <p class="subtitle">Sua conta foi ativada. Seu painel MMN está sendo liberado.</p>
-        <div class="loader"></div>
-    </div>
-</div>
-
-<script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const email = urlParams.get('email');
-    // MUDANÇA: Iniciei como OURO para bater com o seu relato de uso
-    let selectedPlan = { nome: 'OURO', valor: 79.99 }; 
-
-    if (!email) { 
-        alert("Sessão expirada."); 
-        window.location.href = "cadastro.html"; 
-    }
-
-    function selectPlan(nome, valor, el) {
-        selectedPlan = { nome, valor };
-        document.querySelectorAll('.plan-option').forEach(o => o.classList.remove('selected'));
-        el.classList.add('selected');
-    }
-
-    async function gerarPagamento() {
-        const btn = document.getElementById('btn-gerar');
-        const loader = document.getElementById('loading-area');
-        btn.style.display = 'none';
-        loader.style.display = 'block';
-
-        try {
-            const res = await fetch(`${CONFIG.BASE_URL}/api/pagamentos/pix`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ plano: selectedPlan.nome, email: email })
-            });
-
-            if (!res.ok) throw new Error("Servidor iniciando");
-
-            const data = await res.json();
-            document.getElementById('payload-pix').innerText = data.pixCopiaEcola;
-            let base64 = data.qrCodeBase64;
-            document.getElementById('qr-code-img').src = base64.startsWith('data:') ? base64 : `data:image/png;base64,${base64}`;
-            document.getElementById('qr-code-img').style.display = 'block';
+    <div class="container">
+        <div id="step1" class="step-content active">
+            <h1>ATIVAR MINHA CONTA</h1>
             
-            showStep(2);
-            iniciarMonitoramento();
-        } catch (e) {
-            console.log("Tentando reconectar ao Render...");
-            setTimeout(gerarPagamento, 4000); 
-        }
-    }
+            <div id="opcoes-planos">
+                <div id="plan-BRONZE" class="plan-option" onclick="selectPlan('BRONZE', 19.99, this)">
+                    <div class="plan-header">
+                        <span class="plan-name">PLANO BRONZE</span>
+                        <span class="plan-price">R$ 19,99</span>
+                    </div>
+                    <div class="plan-bonus">Bonus MMN: R$ 5,00</div>
+                </div>
 
-    function showStep(n) {
-        document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
-        document.getElementById('step' + n).classList.add('active');
-    }
+                <div id="plan-PRATA" class="plan-option" onclick="selectPlan('PRATA', 49.99, this)">
+                    <div class="plan-header">
+                        <span class="plan-name">PLANO PRATA</span>
+                        <span class="plan-price">R$ 49,99</span>
+                    </div>
+                    <div class="plan-bonus">Bonus MMN: R$ 15,00</div>
+                </div>
 
-    function copiarCodigo() {
-        navigator.clipboard.writeText(document.getElementById('payload-pix').innerText);
-        alert("Código Copiado!");
-    }
+                <div id="plan-OURO" class="plan-option" onclick="selectPlan('OURO', 79.99, this)">
+                    <div class="plan-header">
+                        <span class="plan-name">PLANO OURO</span>
+                        <span class="plan-price">R$ 79,99</span>
+                    </div>
+                    <div class="plan-bonus">Bonus MMN: R$ 30,00</div>
+                </div>
+            </div>
 
-    // --- CORREÇÃO DA LÓGICA DE MMN E ATIVAÇÃO DE PLANO ---
-    function iniciarMonitoramento() {
-        const checkInterval = setInterval(async () => {
-            try {
-                const res = await fetch(`${CONFIG.BASE_URL}/api/usuarios/todos`);
-                const users = await res.json();
-                const u = users.find(user => user.email.toLowerCase() === email.toLowerCase());
-                
-                // CORREÇÃO: Verifica se o plano no banco de dados é o que foi selecionado
-                // Se o banco retornar "OURO", "PRATA" ou "BRONZE" (e não for mais NENHUM)
-                if (u && u.plano && u.plano !== "NENHUM") {
-                    
-                    // 1. Atualiza o texto da tela de sucesso
-                    document.getElementById('plano-confirmado').innerText = u.plano;
+            <button class="btn btn-primary" id="btn-gerar" onclick="gerarPagamento()">GERAR PIX AGORA</button>
+            
+            <div id="loader-geracao" style="display:none;">
+                <div class="loader"></div>
+                <p style="text-align:center; font-size:11px; color:var(--primary);">CONECTANDO AO TERMINAL...</p>
+            </div>
+        </div>
 
-                    // 2. CONEXÃO MMN: Atualiza a sessão local com o plano REAL do banco
-                    // Isso evita que o Dashboard continue lendo "Bronze" se o banco já mudou
-                    const localUser = JSON.parse(localStorage.getItem('usuarioLogado') || "{}");
-                    localUser.plano = u.plano;
-                    localUser.dataExpiracao = u.dataExpiracao;
-                    localStorage.setItem('usuarioLogado', JSON.stringify(localUser));
+        <div id="step2" class="step-content">
+            <h1>PAGUE COM PIX</h1>
+            <div class="qr-wrapper"><img id="qr-code-img" src="" alt="QR Code PIX"></div>
+            <div class="pix-code-box" id="payload-pix">Gerando chave...</div>
+            <button class="btn btn-primary" onclick="copiarCodigo()">COPIAR CÓDIGO PIX</button>
+            <p style="text-align: center; font-size: 11px; color: var(--success); margin-top: 15px; font-weight: 700;">SISTEMA AGUARDANDO PAGAMENTO...</p>
+        </div>
+    </div>
 
-                    if (!u.dataExpiracao) {
-                        showStep(3); 
-                    } else {
-                        clearInterval(checkInterval); // Para o monitoramento
-                        setTimeout(() => {
-                            window.location.href = `dashboard.html?email=${email}`;
-                        }, 2000);
-                    }
-                }
-            } catch (e) {
-                console.error("Erro ao monitorar:", e);
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        let email = urlParams.get('email');
+        let planoDaUrl = urlParams.get('plano') ? urlParams.get('plano').toUpperCase() : 'BRONZE';
+        
+        // Objeto Global que guarda o estado real do pagamento
+        let selectedPlan = { nome: 'BRONZE', valor: '19.99' };
+
+        // Inicialização Automática baseada na URL
+        window.onload = () => {
+            if (!email) {
+                alert("Erro: E-mail não identificado.");
+                return;
             }
-        }, 5000);
-    }
-</script>
+
+            // Mapeamento de preços iniciais
+            const precos = { 'BRONZE': 19.99, 'PRATA': 49.99, 'OURO': 79.99 };
+            const valorInicial = precos[planoDaUrl] || 19.99;
+            
+            // Seleciona visualmente o plano que veio na URL
+            const elementoAlvo = document.getElementById('plan-' + planoDaUrl);
+            if (elementoAlvo) {
+                selectPlan(planoDaUrl, valorInicial, elementoAlvo);
+            } else {
+                // Fallback se o plano na URL for inválido
+                selectPlan('BRONZE', 19.99, document.getElementById('plan-BRONZE'));
+            }
+        };
+
+        function selectPlan(nome, valor, el) {
+            selectedPlan.nome = nome;
+            selectedPlan.valor = valor.toFixed(2); // Garante 2 casas decimais
+            
+            // Atualiza interface
+            document.querySelectorAll('.plan-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+            
+            console.log("Sistema pronto para processar:", selectedPlan);
+        }
+
+        async function gerarPagamento() {
+            const btnGerar = document.getElementById('btn-gerar');
+            const loaderGeracao = document.getElementById('loader-geracao');
+            
+            btnGerar.style.display = 'none';
+            loaderGeracao.style.display = 'block';
+
+            try {
+                // Envia exatamente o que foi selecionado (seja via URL ou clique)
+                const response = await fetch('api_bridge.php?path=api/pagamentos/pix', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        plano: selectedPlan.nome, 
+                        email: email,
+                        valor: selectedPlan.valor 
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.qrCodeBase64) {
+                    document.getElementById('payload-pix').innerText = data.pixCopiaEcola;
+                    document.getElementById('qr-code-img').src = "data:image/png;base64," + data.qrCodeBase64;
+                    
+                    document.getElementById('step1').classList.remove('active');
+                    document.getElementById('step2').classList.add('active');
+                } else {
+                    throw new Error(data.erro || "Erro no processamento do PIX.");
+                }
+            } catch (error) {
+                alert("Falha: " + error.message);
+                btnGerar.style.display = 'block';
+                loaderGeracao.style.display = 'none';
+            }
+        }
+
+        function copiarCodigo() {
+            const texto = document.getElementById('payload-pix').innerText;
+            navigator.clipboard.writeText(texto).then(() => alert("Copiado com sucesso!"));
+        }
+    </script>
 </body>
 </html>

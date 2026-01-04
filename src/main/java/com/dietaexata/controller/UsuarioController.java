@@ -95,12 +95,37 @@ public class UsuarioController {
         }
     }
 
-    // --- MÉTODOS SOLICITADOS PELO PAYMENTCONTROLLER (CORREÇÃO DE ERROS) ---
+    // --- ENDPOINT PARA SOLICITAR SAQUE (DEDUZINDO DO BANCO) ---
+    
+    @PostMapping("/solicitar-saque")
+    public ResponseEntity<?> solicitarSaque(@RequestBody Map<String, Object> payload) {
+        String email = (String) payload.get("email");
+        Double valorSaque = Double.parseDouble(payload.get("valor").toString());
+
+        Usuario u = repository.findByEmail(email);
+        if (u == null) return ResponseEntity.status(404).body("Usuário não encontrado.");
+
+        double saldoAtual = Optional.ofNullable(u.getSaldoDisponivel()).orElse(0.0);
+
+        if (saldoAtual >= valorSaque) {
+            // AQUI É ONDE O SALDO É "APAGADO" (SUBTRAÍDO) DO BANCO DE DADOS
+            u.setSaldoDisponivel(saldoAtual - valorSaque);
+            
+            // Adicionamos ao saldo solicitado (pendente de pagamento pelo admin)
+            u.setSaldoSolicitado(Optional.ofNullable(u.getSaldoSolicitado()).orElse(0.0) + valorSaque);
+            
+            repository.saveAndFlush(u);
+            return ResponseEntity.ok(Map.of("mensagem", "Saque realizado com sucesso!", "novoSaldo", u.getSaldoDisponivel()));
+        } else {
+            return ResponseEntity.badRequest().body("Saldo insuficiente para o saque solicitado.");
+        }
+    }
+
+    // --- MÉTODOS SOLICITADOS PELO PAYMENTCONTROLLER ---
 
     public void renovarPlanoAdmin(String email) {
         Usuario u = repository.findByEmail(email);
         if (u != null) {
-            // Se o usuário pagou e está como Bronze, sobe para Ouro automaticamente
             if (u.getPlano() == null || u.getPlano().equalsIgnoreCase("BRONZE")) {
                 u.setPlano("OURO");
             }
@@ -113,7 +138,6 @@ public class UsuarioController {
     public void processarBonusPercentualPeloEmail(String email, double valorPago) {
         Usuario u = repository.findByEmail(email);
         if (u != null) {
-            // MANTENDO LÓGICA MMN: Aciona a rede de ganhos
             processarGanhosRede(u);
         }
     }
@@ -122,13 +146,11 @@ public class UsuarioController {
         String email = (String) payload.get("external_reference");
         Usuario u = repository.findByEmail(email);
         if (u != null) {
-            u.setDataExpiracao(LocalDateTime.now().minusDays(1)); // Inativa a conta
+            u.setDataExpiracao(LocalDateTime.now().minusDays(1)); 
             repository.saveAndFlush(u);
             System.out.println("Pagamento estornado/cancelado para: " + email);
         }
     }
-
-    // ---------------------------------------------------------------------
 
     @PostMapping("/pagamentos/webhook")
     public ResponseEntity<?> webhookPagamento(@RequestBody Map<String, Object> payload) {
@@ -137,7 +159,6 @@ public class UsuarioController {
             if (email != null) {
                 Usuario u = repository.findByEmail(email);
                 if (u != null) {
-                    // Garante a subida de plano para evitar o erro do "Bronze"
                     if (u.getPlano() == null || u.getPlano().equalsIgnoreCase("BRONZE")) {
                         u.setPlano("OURO"); 
                     }
@@ -192,7 +213,7 @@ public class UsuarioController {
         }
     }
 
-    // LÓGICA DE MMN (Multi-Level Marketing)
+    // LÓGICA DE MMN (Multi-Level Marketing) - PRESERVADA
     private void processarGanhosRede(Usuario novo) {
         if (novo.getIndicadoPor() == null || novo.getIndicadoPor().isEmpty()) return;
 
@@ -240,8 +261,10 @@ public class UsuarioController {
         }
     }
 
+    // CRÉDITO DE VALOR - SEMPRE SOMANDO PARA NÃO SOBRESCREVER SAQUES
     private void creditarValor(Usuario u, double valor, boolean isDireto) {
         if (u == null) return;
+        // u.setSaldoDisponivel(saldoAnterior + novoValor)
         u.setSaldoDisponivel(Optional.ofNullable(u.getSaldoDisponivel()).orElse(0.0) + valor);
         if (isDireto) u.setGanhosDiretos(Optional.ofNullable(u.getGanhosDiretos()).orElse(0.0) + valor);
         else u.setGanhosIndiretos(Optional.ofNullable(u.getGanhosIndiretos()).orElse(0.0) + valor);

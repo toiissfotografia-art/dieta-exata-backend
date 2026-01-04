@@ -140,6 +140,30 @@
         
         .stat-card.balance .value { color: var(--green); }
 
+        .btn-withdraw {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 10px;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+        .btn-withdraw:hover { background: #2ecc71; box-shadow: 0 0 10px rgba(46, 204, 113, 0.3); }
+        .btn-withdraw:disabled { background: #444; cursor: not-allowed; }
+
+        #pending-withdrawal-info {
+            font-size: 11px;
+            color: #ff4444;
+            margin-top: 5px;
+            display: none;
+            font-weight: 700;
+        }
+
         /* Seção Dieta e Link */
         .content-flex { display: flex; gap: 20px; flex-wrap: wrap; }
         
@@ -216,6 +240,30 @@
         }
         .data-table td { padding: 14px 12px; border-bottom: 1px solid #111; }
 
+        /* Modal de Saque */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .modal-content {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid var(--neon);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        /* Novas Classes para Admin */
+        .admin-badge { background: var(--neon); color: black; font-size: 9px; padding: 2px 5px; border-radius: 4px; margin-left: 5px; vertical-align: middle; }
+        .mmn-tag { font-size: 10px; color: var(--text-dim); display: block; }
+
         @media (max-width: 768px) { 
             body { flex-direction: column; } 
             .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #1a1a1a; padding: 20px; box-sizing: border-box; } 
@@ -227,15 +275,22 @@
 
     <aside class="sidebar">
         <div class="logo">DIETA EXATA</div>
-        <a onclick="showSection('main-dash')" class="nav-link active" id="btn-dash">DASHBOARD</a>
+        <a onclick="showSection('main-dash')" class="nav-link active" id="btn-dash">PAINEL</a>
         <a href="configurar-dieta.html" class="nav-link">MINHA DIETA</a>
         <a onclick="showSection('rede-section')" class="nav-link" id="btn-rede">MINHA REDE</a>
         <a onclick="showSection('financeiro-section')" class="nav-link" id="btn-fin">FINANCEIRO</a>
+        
+        <div id="admin-menu" style="display: none; border-top: 1px solid #222; margin-top: 10px; padding-top: 10px;">
+            <p style="font-size: 10px; color: var(--neon); font-weight: 800; margin-left: 18px; margin-bottom: 10px;">GERENCIAMENTO</p>
+            <a onclick="showSection('admin-users')" class="nav-link" id="btn-adm-users">TODOS USUÁRIOS</a>
+            <a onclick="showSection('admin-withdraws')" class="nav-link" id="btn-adm-saques">PAGAR SAQUES</a>
+        </div>
+
         <a href="upgrade.html" class="nav-link" style="color: var(--gold);">UPGRADE OURO</a>
         <div class="nav-link logout" onclick="logout()">SAIR DO TERMINAL</div>
     </aside>
 
-    <main class="main" id="main-dash">
+    <main class="main" id="main-container">
         <header class="header">
             <div class="user-info">
                 <h2 id="user-name">CARREGANDO...</h2>
@@ -244,48 +299,53 @@
             <div id="system-status" style="font-size: 11px; font-weight: 700; color: var(--green);">● SISTEMA ONLINE</div>
         </header>
 
-        <div class="stats-grid">
-            <div class="stat-card balance">
-                <h4>Saldo Disponível</h4>
-                <div class="value" id="balance">R$ 0,00</div>
-                <small style="color: #666; font-size: 11px;">Mínimo para saque: R$ 50,00</small>
-            </div>
-            <div class="stat-card">
-                <h4>Rede Direta</h4>
-                <div class="value" id="referrals">0</div>
-                <small style="color: #666; font-size: 11px;">Membros ativos (Nível 1)</small>
-            </div>
-            <div class="stat-card">
-                <h4>Ganhos Totais</h4>
-                <div class="value" id="total-earnings">R$ 0,00</div>
-                <small style="color: #666; font-size: 11px;">Acumulado histórico</small>
-            </div>
-        </div>
-
-        <div class="content-flex section-toggle" id="content-main">
-            <div class="diet-box">
-                <h3 style="font-size: 16px; margin-top: 0; font-weight: 700;">PROTOCOLO ATUAL</h3>
-                <div id="diet-status">
-                    <p style="color: #888; font-size: 14px;">Nenhuma dieta ativa no momento. Inicie a análise por I.A. para gerar seu protocolo.</p>
-                    <button class="btn-action" onclick="location.href='configurar-dieta.html'">GERAR MINHA DIETA</button>
+        <div id="main-dash" class="section-toggle">
+            <div class="stats-grid">
+                <div class="stat-card balance">
+                    <h4>Saldo Disponível</h4>
+                    <div class="value" id="balance">R$ 0,00</div>
+                    <div id="pending-withdrawal-info">AGUARDANDO PAGAMENTO...</div>
+                    <button class="btn-withdraw" id="main-withdraw-btn" onclick="abrirModalSaque()">SOLICITAR SAQUE PIX</button>
+                    <br>
+                    <small style="color: #666; font-size: 11px;">Mínimo para saque: R$ 50,00</small>
                 </div>
-                
-                <hr style="border: 0; border-top: 1px solid #1a1a1a; margin: 30px 0;">
-                
-                <h3 style="color: var(--neon); font-size: 14px; font-weight: 700; text-transform: uppercase;">Transferência de Saldo</h3>
-                <p style="font-size: 12px; color: #888; margin-bottom: 20px;">Envie fundos instantaneamente para outro membro da rede.</p>
-                <input type="email" id="transf-email" class="transfer-input" placeholder="E-mail do destinatário">
-                <input type="number" id="transf-valor" class="transfer-input" placeholder="Valor (R$)">
-                <button class="btn-action" style="background: #111; color: var(--neon); border: 1px solid var(--neon);" onclick="executarTransferencia()">EFETUAR TRANSFERÊNCIA</button>
-                
-                <button class="btn-action" style="background: #27ae60; color: white; margin-top: 10px;" onclick="window.open('https://wa.me/5511999999999')">SUPORTE NUTRICIONAL</button>
+                <div class="stat-card">
+                    <h4>Rede Direta</h4>
+                    <div class="value" id="referrals">0</div>
+                    <small style="color: #666; font-size: 11px;">Membros ativos (Nível 1)</small>
+                </div>
+                <div class="stat-card">
+                    <h4>Ganhos Totais</h4>
+                    <div class="value" id="total-earnings">R$ 0,00</div>
+                    <small style="color: #666; font-size: 11px;">Acumulado histórico</small>
+                </div>
             </div>
 
-            <div class="affiliate-box">
-                <h3 style="margin-top: 0; color: var(--neon); font-size: 16px; font-weight: 700;">LINK DE AFILIADO</h3>
-                <p style="font-size: 13px; color: #ccc; line-height: 1.5;">Compartilhe seu link e ganhe comissões sobre cada ativação na sua rede.</p>
-                <div class="copy-link" id="affiliate-link" onclick="copyLink()">Carregando link...</div>
-                <small style="color: #666; font-size: 11px; font-weight: 600;">CLIQUE ACIMA PARA COPIAR</small>
+            <div class="content-flex" id="content-main">
+                <div class="diet-box">
+                    <h3 style="font-size: 16px; margin-top: 0; font-weight: 700;">PROTOCOLO ATUAL</h3>
+                    <div id="diet-status">
+                        <p style="color: #888; font-size: 14px;">Nenhuma dieta ativa no momento. Inicie a análise por I.A. para gerar seu protocolo.</p>
+                        <button class="btn-action" onclick="location.href='configurar-dieta.html'">GERAR MINHA DIETA</button>
+                    </div>
+                    
+                    <hr style="border: 0; border-top: 1px solid #1a1a1a; margin: 30px 0;">
+                    
+                    <h3 style="color: var(--neon); font-size: 14px; font-weight: 700; text-transform: uppercase;">Transferência de Saldo</h3>
+                    <p style="font-size: 12px; color: #888; margin-bottom: 20px;">Envie fundos instantaneamente para outro membro da rede.</p>
+                    <input type="email" id="transf-email" class="transfer-input" placeholder="E-mail do destinatário">
+                    <input type="number" id="transf-valor" class="transfer-input" placeholder="Valor (R$)">
+                    <button class="btn-action" style="background: #111; color: var(--neon); border: 1px solid var(--neon);" onclick="executarTransferencia()">EFETUAR TRANSFERÊNCIA</button>
+                    
+                    <button class="btn-action" style="background: #27ae60; color: white; margin-top: 10px;" onclick="window.open('https://wa.me/5511999999999')">SUPORTE NUTRICIONAL</button>
+                </div>
+
+                <div class="affiliate-box">
+                    <h3 style="margin-top: 0; color: var(--neon); font-size: 16px; font-weight: 700;">LINK DE AFILIADO</h3>
+                    <p style="font-size: 13px; color: #ccc; line-height: 1.5;">Compartilhe seu link e ganhe comissões sobre cada ativação na sua rede.</p>
+                    <div class="copy-link" id="affiliate-link" onclick="copyLink()">Carregando link...</div>
+                    <small style="color: #666; font-size: 11px; font-weight: 600;">CLIQUE ACIMA PARA COPIAR</small>
+                </div>
             </div>
         </div>
 
@@ -315,26 +375,128 @@
                     <div id="ganho-ind" style="color: var(--gold); font-size: 20px; font-weight: 700; margin-top: 5px;">R$ 0,00</div>
                 </div>
             </div>
-            <p style="font-size: 12px; color: #666; line-height: 1.6;">As comissões são processadas e creditadas instantaneamente em seu saldo após a confirmação do pagamento (PIX) de qualquer membro da sua rede até o 3º nível.</p>
+            <p style="font-size: 12px; color: #666; line-height: 1.6;">As comissões são creditadas instantaneamente após o pagamento do PIX de membros até o 3º nível.</p>
+        </div>
+
+        <div id="admin-users" class="diet-box section-toggle" style="display: none; margin-top: 0;">
+            <h3 style="color: var(--neon); font-size: 16px; font-weight: 700;">GESTÃO DE USUÁRIOS MASTER</h3>
+            <input type="text" id="search-admin" class="transfer-input" placeholder="Buscar por e-mail ou nome..." onkeyup="filterAdminUsers()">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>NOME / E-MAIL</th>
+                        <th>PATROCINADOR</th>
+                        <th>SALDO</th>
+                        <th>AÇÃO</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-lista-geral"></tbody>
+            </table>
+        </div>
+
+        <div id="admin-withdraws" class="diet-box section-toggle" style="display: none; margin-top: 0;">
+            <h3 style="color: var(--neon); font-size: 16px; font-weight: 700;">SAQUES PENDENTES</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>USUÁRIO</th>
+                        <th>VALOR</th>
+                        <th>CHAVE PIX</th>
+                        <th>AÇÃO</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-lista-saques"></tbody>
+            </table>
         </div>
     </main>
+
+    <div id="modalSaque" class="modal">
+        <div class="modal-content">
+            <h3 style="color: var(--neon); margin-top: 0; font-size: 16px;">RETIRADA PIX</h3>
+            <p style="font-size: 12px; color: #888; margin-bottom: 20px;">Defina o valor e sua chave para recebimento.</p>
+            <input type="number" id="saque-valor" class="transfer-input" placeholder="Valor do saque (R$)">
+            <input type="text" id="saque-chave" class="transfer-input" placeholder="Chave PIX (CPF, Celular, etc)">
+            <button class="btn-action" id="btn-confirm-saque" onclick="confirmarSaque()">CONFIRMAR E ABATER SALDO</button>
+            <button class="btn-action" style="background: #222; color: #888; border: none; margin-top: 10px;" onclick="fecharModalSaque()">CANCELAR</button>
+        </div>
+    </div>
 
     <script>
         const sessao = localStorage.getItem('usuarioLogado');
         if (!sessao) window.location.href = 'index.html';
-        const user = JSON.parse(sessao);
+        let userLocal = JSON.parse(sessao);
+
+        // Habilita menu Master
+        if (userLocal.email.toLowerCase() === 'toiiss@dietaexata.com.br') {
+            document.getElementById('admin-menu').style.display = 'block';
+        }
 
         function showSection(sectionId) {
             document.querySelectorAll('.section-toggle').forEach(s => s.style.display = 'none');
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             
-            if (sectionId === 'main-dash') {
-                document.getElementById('content-main').style.display = 'flex';
-                document.getElementById('btn-dash').classList.add('active');
-            } else {
-                document.getElementById(sectionId).style.display = 'block';
-                if(sectionId === 'rede-section') document.getElementById('btn-rede').classList.add('active');
-                if(sectionId === 'financeiro-section') document.getElementById('btn-fin').classList.add('active');
+            const btnMap = {
+                'main-dash': 'btn-dash',
+                'rede-section': 'btn-rede',
+                'financeiro-section': 'btn-fin',
+                'admin-users': 'btn-adm-users',
+                'admin-withdraws': 'btn-adm-saques'
+            };
+
+            document.getElementById(sectionId).style.display = 'block';
+            if(sectionId === 'main-dash') document.getElementById('content-main').style.display = 'flex';
+            
+            if (btnMap[sectionId]) document.getElementById(btnMap[sectionId]).classList.add('active');
+        }
+
+        function abrirModalSaque() { document.getElementById('modalSaque').style.display = 'flex'; }
+        function fecharModalSaque() { document.getElementById('modalSaque').style.display = 'none'; }
+        
+        async function confirmarSaque() {
+            const btn = document.getElementById('btn-confirm-saque');
+            const valorInput = document.getElementById('saque-valor');
+            const valor = parseFloat(valorInput.value);
+            const chave = document.getElementById('saque-chave').value;
+
+            if(!valor || valor < 50) return alert("Mínimo R$ 50,00");
+            if(valor > parseFloat(userLocal.saldoDisponivel)) return alert("Saldo insuficiente.");
+            if(!chave) return alert("Informe a chave PIX.");
+
+            btn.disabled = true; btn.innerText = "PROCESSANDO...";
+
+            try {
+                const res = await fetch('api_bridge.php?path=api/usuarios/admin/solicitar-saque', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        emailUsuario: userLocal.email,
+                        valor: valor,
+                        chavePix: chave
+                    })
+                });
+
+                const resultado = await res.json();
+
+                if (resultado.status === 'success') {
+                    // ATUALIZAÇÃO CRÍTICA: Subtrai o valor localmente para refletir na UI imediatamente
+                    userLocal.saldoDisponivel = parseFloat(userLocal.saldoDisponivel) - valor;
+                    userLocal.ultimoSaqueSolicitado = valor;
+                    
+                    // Salva no localStorage para persistência
+                    localStorage.setItem('usuarioLogado', JSON.stringify(userLocal));
+                    
+                    alert("SAQUE SOLICITADO! Seu saldo foi atualizado.");
+                    fecharModalSaque();
+                    
+                    // Chama a função de renderização para aplicar o novo saldo visualmente
+                    loadDashboardData();
+                } else {
+                    alert(resultado.message || "Erro ao processar saque.");
+                }
+            } catch (err) { 
+                alert("Erro de conexão com o servidor."); 
+            } finally { 
+                btn.disabled = false; btn.innerText = "CONFIRMAR E ABATER SALDO"; 
             }
         }
 
@@ -342,80 +504,130 @@
             try {
                 const res = await fetch('api_bridge.php?path=api/usuarios/todos');
                 const users = await res.json();
-                const currentUser = users.find(u => u.email.toLowerCase() === user.email.toLowerCase());
+                const currentUser = users.find(u => u.email.toLowerCase() === userLocal.email.toLowerCase());
 
                 if (currentUser) {
-                    document.getElementById('user-name').innerText = `OLÁ, ${currentUser.nome.split(' ')[0].toUpperCase()}`;
+                    userLocal = currentUser;
+                    localStorage.setItem('usuarioLogado', JSON.stringify(currentUser));
+
+                    // Atualiza Nome e Admin Badge
+                    document.getElementById('user-name').innerHTML = `OLÁ, ${currentUser.nome.split(' ')[0].toUpperCase()} ${currentUser.email === 'toiiss@dietaexata.com.br' ? '<span class="admin-badge">MASTER</span>' : ''}`;
                     document.getElementById('user-plan').innerText = currentUser.plano || "BRONZE";
+                    
+                    // ATUALIZAÇÃO DO SALDO (Reflete o valor abatido)
                     document.getElementById('balance').innerText = `R$ ${parseFloat(currentUser.saldoDisponivel || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                     
-                    const ganhosTotais = (currentUser.ganhosDiretos || 0) + (currentUser.ganhosIndiretos || 0);
+                    // Exibe info de saque pendente se houver
+                    const pendente = parseFloat(currentUser.ultimoSaqueSolicitado || 0);
+                    const infoPendente = document.getElementById('pending-withdrawal-info');
+                    if (pendente > 0) {
+                        infoPendente.style.display = 'block';
+                        infoPendente.innerText = `AGUARDANDO PAGAMENTO: R$ ${pendente.toFixed(2)}`;
+                    } else {
+                        infoPendente.style.display = 'none';
+                    }
+
+                    // Ganhos Totais
+                    const ganhosTotais = (parseFloat(currentUser.ganhosDiretos || 0)) + (parseFloat(currentUser.ganhosIndiretos || 0));
                     document.getElementById('total-earnings').innerText = `R$ ${ganhosTotais.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                    
                     document.getElementById('ganho-dir').innerText = `R$ ${parseFloat(currentUser.ganhosDiretos || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                     document.getElementById('ganho-ind').innerText = `R$ ${parseFloat(currentUser.ganhosIndiretos || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
 
-                    // Lógica MMN: Filtrar indicados diretos
+                    // MMN: Rede Nível 1
                     const indicados = users.filter(u => u.indicadoPor && u.indicadoPor.toLowerCase() === currentUser.email.toLowerCase());
                     document.getElementById('referrals').innerText = indicados.length;
-                    
                     let listaHtml = "";
                     indicados.forEach(i => {
                         listaHtml += `<tr><td>${i.nome}</td><td>${i.plano}</td><td style="color:var(--green); font-weight:700;">ATIVO</td></tr>`;
                     });
-                    document.getElementById('rede-lista').innerHTML = listaHtml || "<tr><td colspan='3' style='color:#444; text-align:center;'>Nenhum indicado direto encontrado.</td></tr>";
+                    document.getElementById('rede-lista').innerHTML = listaHtml || "<tr><td colspan='3' style='text-align:center;'>Nenhum indicado direto.</td></tr>";
 
                     const link = `${window.location.origin}/cadastro.html?ref=${encodeURIComponent(currentUser.email)}`;
                     document.getElementById('affiliate-link').innerText = link;
 
-                    if (currentUser.dietaAtual) {
-                        document.getElementById('diet-status').innerHTML = `
-                            <p style="color: var(--green); font-size:14px; font-weight:600;">● Protocolo de Biohacking Ativo</p>
-                            <button class="btn-action" onclick="location.href='configurar-dieta.html'">VER PROTOCOLO COMPLETO</button>
-                        `;
+                    // Dados Administrativos
+                    if (currentUser.email === 'toiiss@dietaexata.com.br') {
+                        renderAdminData(users);
                     }
-                    localStorage.setItem('usuarioLogado', JSON.stringify(currentUser));
                 }
-            } catch (err) { console.error("Erro ao carregar dados:", err); }
+            } catch (err) { console.error(err); }
+        }
+
+        function renderAdminData(allUsers) {
+            let htmlUsers = "";
+            allUsers.forEach(u => {
+                htmlUsers += `<tr>
+                    <td>${u.nome}<br><small>${u.email}</small></td>
+                    <td><span class="mmn-tag">${u.indicadoPor || 'DIRETO'}</span></td>
+                    <td>R$ ${parseFloat(u.saldoDisponivel).toFixed(2)}</td>
+                    <td><button class="btn-withdraw" style="background:var(--neon); color:black;" onclick="ativarUsuarioAdmin('${u.email}')">ATIVAR</button></td>
+                </tr>`;
+            });
+            document.getElementById('admin-lista-geral').innerHTML = htmlUsers;
+
+            const saques = allUsers.filter(u => parseFloat(u.ultimoSaqueSolicitado || 0) > 0);
+            let htmlSaques = "";
+            saques.forEach(s => {
+                htmlSaques += `<tr>
+                    <td>${s.nome}</td>
+                    <td>R$ ${s.ultimoSaqueSolicitado}</td>
+                    <td><small>${s.chavePixSaque || s.chavePix || '---'}</small></td>
+                    <td><button class="btn-withdraw" onclick="finalizarSaqueAdmin('${s.email}')">BAIXA PAGO</button></td>
+                </tr>`;
+            });
+            document.getElementById('admin-lista-saques').innerHTML = htmlSaques || "<tr><td colspan='4'>Sem saques pendentes.</td></tr>";
+        }
+
+        async function ativarUsuarioAdmin(email) {
+            if(!confirm("Deseja ativar manualmente este usuário?")) return;
+            const res = await fetch(`api_bridge.php?path=api/usuarios/renovar-plano-admin/${email}`, { method: 'POST' });
+            if(res.ok) { alert("Usuário Ativado!"); loadDashboardData(); }
+        }
+
+        async function finalizarSaqueAdmin(email) {
+            if(!confirm("Confirmar pagamento PIX? Isso limpará a pendência do usuário.")) return;
+            const res = await fetch(`api_bridge.php?path=api/usuarios/admin/finalizar-saque`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ emailUsuario: email })
+            });
+            if(res.ok) { alert("Pagamento confirmado!"); loadDashboardData(); }
+        }
+
+        function filterAdminUsers() {
+            const val = document.getElementById('search-admin').value.toLowerCase();
+            const rows = document.querySelectorAll('#admin-lista-geral tr');
+            rows.forEach(r => r.style.display = r.innerText.toLowerCase().includes(val) ? '' : 'none');
         }
 
         async function executarTransferencia() {
             const emailDest = document.getElementById('transf-email').value.trim();
             const valor = parseFloat(document.getElementById('transf-valor').value);
-            const remetente = JSON.parse(localStorage.getItem('usuarioLogado'));
-            
-            if (!emailDest || isNaN(valor) || valor <= 0) return alert("Preencha os dados corretamente.");
-            if (valor > remetente.saldoDisponivel) return alert("Saldo insuficiente.");
+            if (!emailDest || isNaN(valor) || valor <= 0 || valor > userLocal.saldoDisponivel) return alert("Verifique os dados e saldo.");
 
             try {
                 const res = await fetch('api_bridge.php?path=api/usuarios/transferir', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ emailOrigem: remetente.email, emailDestino: emailDest, valor: valor })
+                    body: JSON.stringify({ emailOrigem: userLocal.email, emailDestino: emailDest, valor: valor })
                 });
-                if (res.ok) { 
-                    alert("Transferência realizada com sucesso!"); 
-                    loadDashboardData(); 
-                    document.getElementById('transf-email').value = "";
-                    document.getElementById('transf-valor').value = "";
-                } else { 
-                    alert("Falha na transferência. Verifique o e-mail do destinatário."); 
-                }
-            } catch (err) { alert("Erro de conexão com o servidor."); }
+                if (res.ok) { alert("Sucesso!"); loadDashboardData(); }
+            } catch (err) { alert("Erro de conexão."); }
         }
 
         function copyLink() {
             const link = document.getElementById('affiliate-link').innerText;
             navigator.clipboard.writeText(link).then(() => {
                 const box = document.getElementById('affiliate-link');
-                const originalText = box.innerText;
-                box.innerText = "COPIADO COM SUCESSO!";
-                setTimeout(() => box.innerText = originalText, 2000);
+                const old = box.innerText;
+                box.innerText = "COPIADO!";
+                setTimeout(() => box.innerText = old, 2000);
             });
         }
 
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
         window.onload = loadDashboardData;
+        setInterval(loadDashboardData, 15000); 
     </script>
 </body>
 </html>
