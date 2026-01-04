@@ -3,152 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PAGAMENTO PIX | DIETA EXATA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <title>Ativação Dieta Exata</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="config.js"></script>
     <style>
-        :root { --neon: #00f2ff; --bg: #050505; --card: #0d0d0d; }
-        body { background: var(--bg); color: white; font-family: 'Rajdhani'; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #222; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 0 20px rgba(0,242,255,0.1); }
-        h1 { font-family: 'Orbitron'; color: var(--neon); font-size: 20px; margin-bottom: 20px; }
-        .plan-selection { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
-        .plan-card { background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
-        .plan-card.active { border-color: var(--neon); background: rgba(0, 242, 255, 0.05); }
-        .plan-price { font-family: 'Orbitron'; color: var(--neon); font-size: 14px; }
-        .btn-gerar { width: 100%; padding: 16px; background: var(--neon); color: black; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; border-radius: 5px; text-transform: uppercase; }
-        #pix-area { display: none; margin-top: 20px; }
-        .qr-frame { background: white; padding: 10px; border-radius: 10px; display: inline-block; margin-bottom: 15px; }
-        .qr-frame img { width: 220px; display: block; }
-        .loader { display: none; color: var(--neon); margin: 20px 0; font-family: 'Orbitron'; font-size: 12px; }
+        :root { --primary: #00f2ff; --success: #00ff88; --bg: #0a0a0a; --card: #161616; --text: #ffffff; --border: #262626; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 420px; padding: 20px; }
+        .step-content { background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid var(--border); display: none; animation: fadeIn 0.3s ease; text-align: center; }
+        .step-content.active { display: block; }
+        h1 { font-size: 22px; margin-bottom: 10px; color: var(--primary); }
+        .subtitle { font-size: 14px; color: #aaa; margin-bottom: 25px; line-height: 1.5; }
+        .plan-option { background: #212121; border: 2px solid transparent; padding: 15px; border-radius: 16px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; text-align: left; }
+        .plan-option.selected { border-color: var(--primary); background: rgba(0, 242, 255, 0.05); }
+        .plan-info { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 5px; }
+        .plan-bonus { font-size: 12px; color: var(--success); font-weight: 500; }
+        .btn { width: 100%; padding: 16px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; text-transform: uppercase; margin-top: 10px; }
+        .btn-primary { background: var(--primary); color: #000; }
+        .qr-wrapper { background: #fff; padding: 10px; border-radius: 16px; width: 200px; height: 200px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        #qr-code-img { width: 100%; height: 100%; display: none; }
+        .pix-box { background: #000; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 10px; color: #888; word-break: break-all; border: 1px dashed #444; margin-bottom: 10px; }
+        .loader { border: 3px solid #333; border-top: 3px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 15px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div id="setup-area">
-            <h1>ATIVAÇÃO DE CONTA</h1>
-            <div class="plan-selection">
-                <div class="plan-card active" onclick="selecionarPlano('BRONZE', '19.99', this)">
-                    <div class="plan-info"><strong>BRONZE</strong></div>
-                    <div class="plan-price">R$ 19,99</div>
-                </div>
-                <div class="plan-card" onclick="selecionarPlano('PRATA', '49.99', this)">
-                    <div class="plan-info"><strong>PRATA</strong></div>
-                    <div class="plan-price">R$ 49,99</div>
-                </div>
-                <div class="plan-card" onclick="selecionarPlano('OURO', '79.99', this)">
-                    <div class="plan-info"><strong>OURO</strong></div>
-                    <div class="plan-price">R$ 79,99</div>
-                </div>
-            </div>
-            <button class="btn-gerar" onclick="gerarPagamento()">GERAR PIX AGORA</button>
+
+<div class="container">
+    <div id="step1" class="step-content active">
+        <h1>Ative sua Conta</h1>
+        <p class="subtitle">Selecione seu plano. O sistema no Render pode levar 30 segundos para processar o primeiro pedido.</p>
+        
+        <div class="plan-option selected" onclick="selectPlan('BRONZE', 19.99, this)">
+            <div class="plan-info"><span>Plano Bronze</span><span>R$ 19,99</span></div>
+            <div class="plan-bonus">Bonus MMN: R$ 5,00 por indicação</div>
+        </div>
+        <div class="plan-option" onclick="selectPlan('PRATA', 49.99, this)">
+            <div class="plan-info"><span>Plano Prata</span><span>R$ 49,99</span></div>
+            <div class="plan-bonus">Bonus MMN: R$ 15,00 por indicação</div>
+        </div>
+        <div class="plan-option" onclick="selectPlan('OURO', 79.99, this)">
+            <div class="plan-info"><span>Plano Ouro</span><span>R$ 79,99</span></div>
+            <div class="plan-bonus">Bonus MMN: R$ 30,00 por indicação</div>
         </div>
 
-        <div id="loader" class="loader">GERANDO PAGAMENTO NO MERCADO PAGO...</div>
-
-        <div id="pix-area">
-            <h1>PAGUE COM PIX</h1>
-            <div class="qr-frame"><img id="qr-img" src="" alt="QR Code"></div>
-            <p id="status-pagamento" style="color: var(--neon); font-size: 12px; font-family: 'Orbitron';">AGUARDANDO PAGAMENTO...</p>
-            <button id="btnCopiar" class="btn-gerar" style="background:#222; color:white; margin-bottom:10px;" onclick="copiarCodigo()">COPIAR CÓDIGO PIX</button>
+        <button class="btn btn-primary" id="btn-gerar" onclick="gerarPagamento()">Gerar QR Code PIX</button>
+        
+        <div id="loading-area" style="display:none;">
+            <div class="loader"></div>
+            <p id="loading-text" style="font-size:12px; color:var(--primary); font-weight: bold;">LIGANDO SERVIDOR RENDER... (AGUARDE)</p>
         </div>
     </div>
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        let email = urlParams.get('email');
-        let planoAtivo = "BRONZE";
-        let valorAtivo = "19.99"; 
-        let pixCopiaEcola = ""; // Variável que receberá o código do Java
+    <div id="step2" class="step-content">
+        <h1>Pagamento PIX</h1>
+        <p class="subtitle">Escaneie o QR Code. Sua ativação será detectada automaticamente.</p>
+        <div class="qr-wrapper"><img id="qr-code-img" src="" alt="QR PIX"></div>
+        <div class="pix-box" id="payload-pix">Gerando código...</div>
+        <button class="btn btn-primary" onclick="copiarCodigo()">Copiar Código PIX</button>
+        <p style="font-size: 11px; color: var(--success); margin-top: 15px; font-weight: 600;">MONITORANDO PAGAMENTO...</p>
+    </div>
 
-        function selecionarPlano(plano, valor, el) {
-            planoAtivo = plano;
-            valorAtivo = valor;
-            document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-        }
+    <div id="step3" class="step-content">
+        <div style="font-size: 40px; margin-bottom: 15px;">⏳</div>
+        <h1>Pagamento Confirmado!</h1>
+        <p class="subtitle">Detectamos sua transação no sistema.</p>
+        <p class="subtitle">Sua conta foi enviada para <strong>Autorização do Admin</strong>. Aguarde a liberação do seu painel MMN em instantes.</p>
+        <div class="loader"></div>
+    </div>
+</div>
 
-        async function gerarPagamento() {
-            if (!email) return alert("Erro: E-mail não encontrado.");
-            document.getElementById('setup-area').style.display = 'none';
-            document.getElementById('loader').style.display = 'block';
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const email = urlParams.get('email');
+    let selectedPlan = { nome: 'BRONZE', valor: 19.99 };
 
-            try {
-                const response = await fetch('api_bridge.php?path=api/pagamentos/pix', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        email: email, 
-                        plano: planoAtivo,
-                        valor: valorAtivo 
-                    })
-                });
+    if (!email) { 
+        alert("Sessão expirada."); 
+        window.location.href = "cadastro.html"; 
+    }
 
-                const data = await response.json();
+    function selectPlan(nome, valor, el) {
+        selectedPlan = { nome, valor };
+        document.querySelectorAll('.plan-option').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+    }
 
-                if (data.qrCodeBase64) {
-                    document.getElementById('loader').style.display = 'none';
-                    document.getElementById('pix-area').style.display = 'block';
-                    document.getElementById('qr-img').src = "data:image/png;base64," + data.qrCodeBase64;
-                    
-                    // CORREÇÃO: Garante que a variável pegue o código do campo 'pixCopiaEcola' vindo do Java
-                    pixCopiaEcola = data.pixCopiaEcola; 
-                    
-                    setInterval(verificarStatus, 5000);
-                } else {
-                    alert("Erro na API: " + (data.erro || "Falha desconhecida"));
-                    location.reload();
-                }
-            } catch (err) {
-                alert("Erro de conexão.");
-                location.reload();
-            }
-        }
+    async function gerarPagamento() {
+        const btn = document.getElementById('btn-gerar');
+        const loader = document.getElementById('loading-area');
+        btn.style.display = 'none';
+        loader.style.display = 'block';
 
-        async function verificarStatus() {
-            try {
-                const res = await fetch(`api_bridge.php?path=api/usuarios/todos`);
-                const usuarios = await res.json();
-                const u = usuarios.find(user => user.email.toLowerCase() === email.toLowerCase());
-                
-                // Tolerância de 2 minutos para fuso horário
-                const agora = new Date();
-                agora.setMinutes(agora.getMinutes() - 2);
-
-                if (u && u.dataExpiracao && new Date(u.dataExpiracao) > agora) {
-                    document.getElementById('status-pagamento').innerText = "PAGO COM SUCESSO!";
-                    document.getElementById('status-pagamento').style.color = "#00ff00";
-                    setTimeout(() => { window.location.href = "dashboard.html"; }, 2000);
-                }
-            } catch (e) { console.log("Checando..."); }
-        }
-
-        // FUNÇÃO DE COPIAR CORRIGIDA PARA SER PROFISSIONAL
-        function copiarCodigo() {
-            if (!pixCopiaEcola) {
-                alert("Código ainda não carregado.");
-                return;
-            }
-
-            navigator.clipboard.writeText(pixCopiaEcola).then(() => {
-                const btn = document.getElementById('btnCopiar');
-                const textoOriginal = btn.innerText;
-                btn.innerText = "COPIADO COM SUCESSO!";
-                btn.style.color = "#00ff00";
-                
-                setTimeout(() => {
-                    btn.innerText = textoOriginal;
-                    btn.style.color = "white";
-                }, 2500);
-            }).catch(err => {
-                // Fallback caso o navegador bloqueie a Clipboard API
-                const input = document.createElement("input");
-                input.value = pixCopiaEcola;
-                document.body.appendChild(input);
-                input.select();
-                document.execCommand("copy");
-                document.body.removeChild(input);
-                alert("Código Copiado!");
+        try {
+            // Chamada direta para o Render conforme sua URL
+            const res = await fetch(`${CONFIG.BASE_URL}/api/pagamentos/pix`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plano: selectedPlan.nome, email: email })
             });
+
+            if (!res.ok) throw new Error("Servidor iniciando");
+
+            const data = await res.json();
+            document.getElementById('payload-pix').innerText = data.pixCopiaEcola;
+            let base64 = data.qrCodeBase64;
+            document.getElementById('qr-code-img').src = base64.startsWith('data:') ? base64 : `data:image/png;base64,${base64}`;
+            document.getElementById('qr-code-img').style.display = 'block';
+            
+            showStep(2);
+            iniciarMonitoramento();
+        } catch (e) {
+            console.log("Tentando reconectar ao Render...");
+            // Se falhar, ele tenta de novo automaticamente até o Render acordar
+            setTimeout(gerarPagamento, 4000); 
         }
-    </script>
+    }
+
+    function showStep(n) {
+        document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
+        document.getElementById('step' + n).classList.add('active');
+    }
+
+    function copiarCodigo() {
+        navigator.clipboard.writeText(document.getElementById('payload-pix').innerText);
+        alert("Código Copiado!");
+    }
+
+    function iniciarMonitoramento() {
+        setInterval(async () => {
+            try {
+                const res = await fetch(`${CONFIG.BASE_URL}/api/usuarios/todos`);
+                const users = await res.json();
+                const u = users.find(user => user.email.toLowerCase() === email.toLowerCase());
+                
+                // MANTENDO LÓGICA MMN: Verifica se o plano foi preenchido
+                if (u && u.plano && u.plano !== "NENHUM") {
+                    if (!u.dataExpiracao) {
+                        showStep(3); // Mostra frase de espera do admin
+                    } else {
+                        window.location.href = `dashboard.html?email=${email}`;
+                    }
+                }
+            } catch (e) {}
+        }, 5000);
+    }
+</script>
 </body>
 </html>

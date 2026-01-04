@@ -2,146 +2,262 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>ADMIN | CENTRAL DE COMANDO</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    <script src="config.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL ADMINISTRATIVO | DIETA EXATA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --neon: #2ecc71; --bg: #050505; --red: #ff4444; --blue: #00f2ff; }
-        body { background: var(--bg); color: white; font-family: 'Rajdhani'; margin: 0; padding: 20px; }
-        h1 { font-family: 'Orbitron'; color: var(--neon); text-align: center; text-shadow: 0 0 10px var(--neon); }
-        .container { max-width: 1000px; margin: 0 auto; }
-        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: #0d0d0d; padding: 20px; border-radius: 10px; border: 1px solid #222; text-align: center; }
-        table { width: 100%; border-collapse: collapse; background: #0d0d0d; border-radius: 10px; overflow: hidden; }
-        th { background: #111; padding: 15px; color: var(--neon); font-family: 'Orbitron'; font-size: 12px; text-align: left; }
-        td { padding: 12px 15px; border-bottom: 1px solid #222; font-size: 14px; }
-        .btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-family: 'Orbitron'; font-size: 10px; font-weight: bold; transition: 0.3s; }
-        .btn-activate { background: var(--neon); color: black; margin-right: 5px; }
-        .btn-delete { background: var(--red); color: white; }
-        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
-        .active { background: rgba(46, 204, 113, 0.2); color: var(--neon); }
-        .expired { background: rgba(255, 68, 68, 0.2); color: var(--red); }
+        :root { 
+            --neon: #00f2ff; 
+            --bg: #050505; 
+            --card: #0d0d0d; 
+            --green: #2ecc71; 
+            --red: #ff4444; 
+            --blue: #00f2ff;
+        }
+        
+        body { background: var(--bg); color: white; font-family: 'Rajdhani'; padding: 20px; margin: 0; }
+
+        .admin-container { max-width: 1200px; margin: 0 auto; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: var(--card);
+            border: 1px solid #222;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        h1 { font-family: 'Orbitron'; color: var(--neon); font-size: 22px; margin: 0; text-shadow: 0 0 10px var(--neon); }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #222;
+            text-align: center;
+        }
+
+        .stat-card h3 { font-size: 12px; color: #888; margin: 0; text-transform: uppercase; }
+        .stat-value { font-size: 22px; font-weight: bold; color: var(--green); margin-top: 10px; font-family: 'Orbitron'; }
+
+        /* Busca Profissional */
+        .search-box { 
+            width: 100%; 
+            padding: 15px; 
+            background: #111; 
+            border: 1px solid #333; 
+            border-radius: 8px; 
+            color: white; 
+            font-family: 'Rajdhani'; 
+            font-size: 16px; 
+            margin-bottom: 20px;
+            outline: none;
+            transition: 0.3s;
+        }
+        .search-box:focus { border-color: var(--neon); box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); }
+
+        /* Tabela Unificada */
+        .table-container { background: var(--card); border-radius: 10px; border: 1px solid #222; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #111; color: var(--neon); font-family: 'Orbitron'; padding: 15px; font-size: 11px; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid #222; font-size: 14px; }
+        
+        tr.pendente { background: rgba(255, 204, 0, 0.03); }
+
+        /* Botões */
+        .btn-action {
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-family: 'Orbitron';
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            text-transform: uppercase;
+            font-size: 10px;
+            transition: 0.3s;
+        }
+        .btn-activate { background: var(--green); color: black; }
+        .btn-activate:hover { box-shadow: 0 0 15px var(--green); transform: scale(1.05); }
+        .btn-delete { background: var(--red); color: white; margin-left: 5px; }
+        .btn-logout { background: var(--red); color: white; font-size: 12px; }
+
+        small { color: #666; display: block; }
+        .badge-status { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>TERMINAL ADMINISTRATIVO</h1>
+    <div class="admin-container">
+        <div class="header">
+            <h1>TERMINAL <span style="color:#fff">ADMIN</span></h1>
+            <button class="btn-action btn-logout" onclick="logout()">SAIR</button>
+        </div>
 
-    <div class="stats-bar">
-        <div class="stat-card">
-            <small>TOTAL USUÁRIOS</small>
-            <div id="total-users" style="font-size: 24px; color: var(--blue);">0</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Faturamento Bruto</h3>
+                <div id="stat-faturamento" class="stat-value">R$ 0,00</div>
+            </div>
+            <div class="stat-card">
+                <h3>Usuários Ativos</h3>
+                <div id="stat-ativos" class="stat-value">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Saques Pendentes</h3>
+                <div id="stat-saques" class="stat-value">R$ 0,00</div>
+            </div>
+            <div class="stat-card">
+                <h3>Reserva Empresa</h3>
+                <div id="stat-reserva" class="stat-value" style="color: var(--blue);">R$ 0,00</div>
+            </div>
         </div>
-        <div class="stat-card">
-            <small>ATIVOS HOJE</small>
-            <div id="active-users" style="font-size: 24px; color: var(--neon);">0</div>
-        </div>
-        <div class="stat-card">
-            <small>AGUARDANDO PIX</small>
-            <div id="pending-users" style="font-size: 24px; color: #ffac00;">0</div>
+
+        <input type="text" id="search" class="search-box" placeholder="Pesquisar por nome ou e-mail..." onkeyup="filterUsers()">
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>NOME / E-MAIL</th>
+                        <th>PLANO / STATUS</th>
+                        <th>EXPIRAÇÃO</th>
+                        <th>SALDO (MMN)</th>
+                        <th>AÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody id="user-list">
+                    </tbody>
+            </table>
         </div>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>NOME</th>
-                <th>E-MAIL</th>
-                <th>PLANO</th>
-                <th>EXPIRAÇÃO</th>
-                <th>AÇÕES</th>
-            </tr>
-        </thead>
-        <tbody id="user-table-body"></tbody>
-    </table>
-</div>
+    <script>
+        let allUsers = [];
 
-<script>
-    async function fetchUsers() {
-        try {
-            const res = await fetch('api_bridge.php?path=api/usuarios/todos');
-            const users = await res.json();
-            renderTable(users);
-        } catch (err) {
-            console.error("Erro ao buscar usuários:", err);
+        // Proteção Admin
+        const userLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+        if (!userLogado || userLogado.email !== 'toiiss@dietaexata.com.br') {
+            alert("Acesso restrito.");
+            window.location.href = 'index.html';
         }
-    }
 
-    function renderTable(users) {
-        const tbody = document.getElementById('user-table-body');
-        const agora = new Date();
-        document.getElementById('total-users').innerText = users.length;
-        let ativos = 0;
+        async function loadAdminData() {
+            try {
+                // 1. Carregar Estatísticas
+                const resStats = await fetch('api_bridge.php?path=api/usuarios/admin/estatisticas');
+                if (resStats.ok) {
+                    const stats = await resStats.json();
+                    document.getElementById('stat-faturamento').innerText = `R$ ${(stats.faturamentoBruto || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                    document.getElementById('stat-ativos').innerText = stats.usuariosAtivos || 0;
+                    document.getElementById('stat-saques').innerText = `R$ ${(stats.saquesPendentes || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                    document.getElementById('stat-reserva').innerText = `R$ ${(stats.reservaEmpresa || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                }
 
-        tbody.innerHTML = users.map(u => {
-            const exp = new Date(u.dataExpiracao);
-            const isAtivo = exp > agora;
-            if(isAtivo) ativos++;
+                // 2. Carregar Usuários
+                const resUsers = await fetch('api_bridge.php?path=api/usuarios/todos');
+                allUsers = await resUsers.json();
+                renderUsers(allUsers);
+            } catch (err) {
+                console.error("Erro ao carregar dados:", err);
+            }
+        }
 
-            return `
-                <tr>
-                    <td>${u.nome}</td>
-                    <td>${u.email}</td>
-                    <td><b style="color:var(--blue)">${u.plano}</b></td>
+        function renderUsers(users) {
+            const list = document.getElementById('user-list');
+            list.innerHTML = "";
+            
+            users.forEach(u => {
+                if(u.email === 'toiiss@dietaexata.com.br') return;
+
+                const isPendente = (!u.plano || u.plano === 'NENHUM' || u.plano === 'INATIVO');
+                const dataExp = u.dataExpiracao ? new Date(u.dataExpiracao).toLocaleDateString() : "PENDENTE";
+                const isExpirado = u.dataExpiracao ? new Date(u.dataExpiracao) < new Date() : true;
+
+                const tr = document.createElement('tr');
+                if(isPendente) tr.className = 'pendente';
+
+                tr.innerHTML = `
                     <td>
-                        <span class="status-badge ${isAtivo ? 'active' : 'expired'}">
-                            ${exp.toLocaleDateString('pt-BR')}
+                        <strong>${u.nome.toUpperCase()}</strong>
+                        <small>${u.email}</small>
+                    </td>
+                    <td>
+                        <span class="badge-status" style="background: ${isPendente ? 'rgba(255,204,0,0.2)' : 'rgba(46,204,113,0.2)'}; color: ${isPendente ? '#ffcc00' : '#2ecc71'}">
+                            ${u.plano || 'AGUARDANDO'}
                         </span>
                     </td>
+                    <td style="color: ${isExpirado ? 'var(--red)' : 'var(--green)'}">${dataExp}</td>
+                    <td>R$ ${(u.saldoDisponivel || 0).toFixed(2)}</td>
                     <td>
-                        <button class="btn btn-activate" onclick="ativarUsuario('${u.email}')">ATIVAR MANUAL</button>
-                        <button class="btn btn-delete" onclick="deletarUsuario('${u.email}')">DELETAR</button>
+                        <button class="btn-action btn-activate" onclick="ativarUsuario('${u.email}')">
+                            ${isPendente ? 'ATIVAR ACESSO' : 'RENOVAR 30D'}
+                        </button>
+                        <button class="btn-action btn-delete" onclick="removerUsuario('${u.email}')">REMOVER</button>
                     </td>
-                </tr>
-            `;
-        }).join('');
-        
-        document.getElementById('active-users').innerText = ativos;
-        document.getElementById('pending-users').innerText = users.length - ativos;
-    }
-
-    // Lógica Corrigida baseada no seu UsuarioController.java
-    async function ativarUsuario(email) {
-        if(!confirm(`Confirmar ativação manual para: ${email}?`)) return;
-
-        try {
-            const res = await fetch('api_bridge.php?path=api/usuarios/processar-upgrade', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: email,
-                    metodo: "ADMIN_MANUAL" // Campo exigido pela sua lógica Java (linha 113)
-                })
+                `;
+                list.appendChild(tr);
             });
-
-            const data = await res.json();
-
-            if(res.ok) {
-                alert("SUCESSO: " + (data.mensagem || "Usuário ativado!"));
-                fetchUsers();
-            } else {
-                alert("ERRO: " + (data.erro || "Falha no processamento."));
-            }
-        } catch (err) {
-            alert("Erro na conexão com a API.");
         }
-    }
 
-    async function deletarUsuario(email) {
-        if(!confirm("TEM CERTEZA?")) return;
-        try {
-            const res = await fetch(`api_bridge.php?path=api/usuarios/deletar/${email}`, {
-                method: 'DELETE'
-            });
-            if(res.ok) {
-                alert("Removido.");
-                fetchUsers();
+        // ATIVAR USUÁRIO (Lógica MMN Mantida)
+        async function ativarUsuario(email) {
+            if(!confirm(`Liberar acesso para ${email}? Isso processará os bônus da rede.`)) return;
+
+            try {
+                // Rota unificada com sua api_bridge
+                const res = await fetch(`api_bridge.php?path=api/usuarios/renovar-plano-admin/${email}`, {
+                    method: 'POST'
+                });
+
+                if (res.ok) {
+                    alert("SUCESSO: Usuário ativado e rede MMN atualizada!");
+                    loadAdminData();
+                } else {
+                    alert("ERRO: O servidor não pôde processar a ativação.");
+                }
+            } catch (err) {
+                alert("FALHA: Erro de comunicação.");
             }
-        } catch (err) { alert("Erro ao deletar."); }
-    }
+        }
 
-    window.onload = fetchUsers;
-</script>
+        async function removerUsuario(email) {
+            if(!confirm(`EXCLUIR PERMANENTEMENTE ${email}?`)) return;
+            try {
+                const res = await fetch(`api_bridge.php?path=api/usuarios/excluir/${email}`, { method: 'DELETE' });
+                if(res.ok) {
+                    alert("Usuário removido.");
+                    loadAdminData();
+                }
+            } catch (e) { alert("Erro ao excluir."); }
+        }
+
+        function filterUsers() {
+            const term = document.getElementById('search').value.toLowerCase();
+            const filtered = allUsers.filter(u => 
+                u.nome.toLowerCase().includes(term) || u.email.toLowerCase().includes(term)
+            );
+            renderUsers(filtered);
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        window.onload = loadAdminData;
+        setInterval(loadAdminData, 30000); // Auto-refresh 30s
+    </script>
 </body>
 </html>
