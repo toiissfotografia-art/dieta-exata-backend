@@ -100,7 +100,7 @@ public class UsuarioController {
                     u.setPlano("OURO"); 
                     u.setDataExpiracao(LocalDateTime.now().plusDays(30));
                     repository.saveAndFlush(u);
-                    processarGanhosRede(u);
+                    processarGanhosRede(u); // Mantendo a lógica de MMN
                     return ResponseEntity.ok("{\"mensagem\":\"Pagamento processado com sucesso!\"}");
                 }
             }
@@ -126,7 +126,7 @@ public class UsuarioController {
                 u.setPlano("OURO");
                 u.setDataExpiracao(LocalDateTime.now().plusDays(30));
                 repository.saveAndFlush(u);
-                processarGanhosRede(u);
+                processarGanhosRede(u); // Mantendo a lógica de MMN
                 return ResponseEntity.ok(Map.of("mensagem", "Usuário ativado via Admin!"));
             }
 
@@ -138,6 +138,7 @@ public class UsuarioController {
                 u.setPlano("OURO");
                 u.setDataExpiracao(LocalDateTime.now().plusDays(30));
                 repository.saveAndFlush(u);
+                processarGanhosRede(u); // Adicionada conexão MMN também no upgrade por saldo
                 return ResponseEntity.ok("{\"mensagem\":\"Upgrade realizado!\"}");
             }
             
@@ -180,7 +181,7 @@ public class UsuarioController {
             u.setDataExpiracao(LocalDateTime.now().plusDays(30));
             if (u.getPlano() == null || u.getPlano().isEmpty()) u.setPlano("OURO");
             repository.saveAndFlush(u);
-            processarGanhosRede(u);
+            processarGanhosRede(u); // Mantendo a lógica de MMN
         }
     }
 
@@ -262,6 +263,7 @@ public class UsuarioController {
         return ResponseEntity.status(404).build();
     }
 
+    // LÓGICA DE MMN (Mantida e conectada conforme solicitado)
     private void processarGanhosRede(Usuario novo) {
         if (novo.getIndicadoPor() == null || novo.getIndicadoPor().isEmpty()) return;
 
@@ -276,6 +278,7 @@ public class UsuarioController {
         
         if (valorPago == 0) return;
 
+        // CONEXÃO NÍVEL 1 (PAI)
         Usuario pai = repository.findAll().stream()
             .filter(u -> u.getEmail().equalsIgnoreCase(novo.getIndicadoPor()))
             .findFirst().orElse(null);
@@ -292,6 +295,7 @@ public class UsuarioController {
             pai.setNivel1count(Optional.ofNullable(pai.getNivel1count()).orElse(0) + 1);
             repository.save(pai);
 
+            // CONEXÃO NÍVEL 2 (AVÔ)
             if (pai.getIndicadoPor() != null && !pai.getIndicadoPor().isEmpty()) {
                 Usuario avo = repository.findAll().stream()
                     .filter(u -> u.getEmail().equalsIgnoreCase(pai.getIndicadoPor()))

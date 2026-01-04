@@ -45,10 +45,14 @@
     <script>
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const ref = urlParams.get('ref');
+            const refUrl = urlParams.get('ref');
+            const refLocal = localStorage.getItem('indicador_email');
+            
+            // Tenta pegar o indicador da URL ou do LocalStorage (Persistência MMN)
+            const ref = refUrl || refLocal;
             
             if (ref) {
-                const indicador = ref.toLowerCase().trim();
+                const indicador = decodeURIComponent(ref).toLowerCase().trim();
                 document.getElementById('indicadorEmail').value = indicador;
                 document.getElementById('ref-name').innerText = indicador;
                 document.getElementById('ref-section').style.display = 'block';
@@ -68,20 +72,22 @@
                 return;
             }
 
-            // O plano vem do localStorage ou padrão BRONZE
+            // O plano vem do localStorage (escolhido na página anterior) ou padrão BRONZE
             const planoSelecionado = localStorage.getItem('plano_escolhido') || 'BRONZE';
 
             const dados = {
                 nome: nome,
-                email: email,
+                email: email.toLowerCase().trim(),
                 senha: senha,
-                indicadoPor: indicadorEmail, // Corrigido para bater com o atributo do Java 'indicadoPor'
+                indicadoPor: indicadorEmail, // Conecta ao atributo do Java
                 plano: planoSelecionado,
-                saldoDisponivel: 0,
-                saldoSolicitado: 0,
-                ganhosDiretos: 0,
-                ganhosIndiretos: 0,
-                dietaAtual: ""
+                saldoDisponivel: 0.0,
+                saldoSolicitado: 0.0,
+                ganhosDiretos: 0.0,
+                ganhosIndiretos: 0.0,
+                nivel1count: 0,
+                nivel2count: 0,
+                nivel3count: 0
             };
 
             btn.disabled = true;
@@ -95,11 +101,9 @@
                 });
 
                 if(res.ok) {
-                    alert("CADASTRO PRÉ-APROVADO! Redirecionando para a área de pagamento PIX.");
-                    
-                    // REDIRECIONAMENTO ESTRATÉGICO PARA O PAGAMENTO
-                    // Passamos o email e plano para facilitar a identificação na tela de PIX
-                    window.location.href = `pix.html?email=${encodeURIComponent(email)}&plano=${planoSelecionado}`;
+                    alert("CADASTRO REALIZADO! Vamos para a ativação do seu plano.");
+                    // Redireciona para o checkout levando os dados
+                    window.location.href = `pix.html?email=${encodeURIComponent(dados.email)}&plano=${planoSelecionado}`;
                 } else {
                     btn.disabled = false;
                     btn.innerText = "ATIVAR MINHA CONTA";
@@ -109,7 +113,8 @@
             } catch (err) {
                 btn.disabled = false;
                 btn.innerText = "ATIVAR MINHA CONTA";
-                alert("ERRO DE CONEXÃO: Verifique o servidor.");
+                alert("ERRO DE CONEXÃO: O servidor não respondeu.");
+                console.error(err);
             }
         }
     </script>

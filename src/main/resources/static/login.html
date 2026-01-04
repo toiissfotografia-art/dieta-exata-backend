@@ -56,14 +56,14 @@
             status.innerText = "Acessando servidor...";
 
             try {
-                // Busca todos os usuários via ponte PHP
+                // Busca todos os usuários via ponte PHP para conferência
                 const response = await fetch('api_bridge.php?path=api/usuarios/todos');
                 
                 if (!response.ok) throw new Error("Servidor fora de linha");
 
                 const usuarios = await response.json();
 
-                // 1. Busca o usuário por e-mail e senha
+                // 1. Localiza o usuário
                 const usuario = usuarios.find(u => 
                     u.email.toLowerCase() === email.toLowerCase() && 
                     u.senha === senha
@@ -74,15 +74,18 @@
                     const agora = new Date();
                     const dataExp = usuario.dataExpiracao ? new Date(usuario.dataExpiracao) : null;
 
-                    // Administradores Mestre sempre passam
+                    // Administradores Mestre
                     const isAdminMestre = (email.toLowerCase() === 'dietaexata@gmail.com' || email.toLowerCase() === 'toiiss@dietaexata.com.br');
 
+                    // Bloqueio se não for Admin e a assinatura estiver vencida/nula
                     if (!isAdminMestre && (!dataExp || dataExp < agora)) {
                         status.style.color = "var(--red)";
-                        status.innerHTML = "ACESSO BLOQUEADO<br>Sua conta aguarda ativação via Mercado Pago.";
+                        status.innerHTML = "ACESSO BLOQUEADO<br>Sua conta aguarda ativação ou renovação.";
                         
-                        // --- REDIRECIONAMENTO ATIVADO ---
-                        // Passamos o email e o plano para a página pix.html gerar a cobrança correta no Mercado Pago
+                        // Salva o plano dele para o checkout reconhecer o valor correto
+                        localStorage.setItem('plano_escolhido', usuario.plano || 'BRONZE');
+                        
+                        // Redirecionamento estratégico para a página de pagamento
                         setTimeout(() => { 
                             window.location.href = `pix.html?email=${encodeURIComponent(usuario.email)}&plano=${usuario.plano || 'BRONZE'}`; 
                         }, 2000);
@@ -94,6 +97,7 @@
                     status.style.color = "var(--neon)";
                     status.innerText = "Acesso autorizado! Redirecionando...";
                     
+                    // Persiste a sessão localmente
                     localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
                     
                     setTimeout(() => {
@@ -119,6 +123,7 @@
             }
         }
 
+        // Atalho de teclado para o Enter
         document.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') fazerLogin();
         });

@@ -59,7 +59,7 @@
             window.location.href = 'index.html';
         }
 
-        // --- INCLUSÃO: BUSCA DE SALDO VIA PONTE PHP ---
+        // --- BUSCA DE SALDO ATUALIZADO ---
         async function carregarSaldo() {
             try {
                 const res = await fetch('api_bridge.php?path=api/usuarios/todos');
@@ -69,8 +69,6 @@
                 if (u) {
                     const saldo = u.saldoDisponivel || 0;
                     document.getElementById('meu-saldo').innerText = "R$ " + saldo.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                    
-                    // Atualiza a sessão local com os dados mais recentes do servidor
                     localStorage.setItem('usuarioLogado', JSON.stringify(u));
                 }
             } catch (err) {
@@ -90,9 +88,8 @@
             });
         }
 
-        // --- INCLUSÃO: PROCESSAMENTO DE UPGRADE VIA PONTE PHP ---
+        // --- INCLUSÃO PROFISSIONAL: PROCESSAMENTO DE UPGRADE MMN ---
         async function pagarComSaldo() {
-            // Recarrega dados para evitar uso de saldo desatualizado no cache
             const sessaoAtualizada = JSON.parse(localStorage.getItem('usuarioLogado'));
             const saldoAtual = sessaoAtualizada.saldoDisponivel || 0;
 
@@ -104,17 +101,21 @@
             if(!confirm("Deseja utilizar R$ 197,00 do seu saldo acumulado para o Upgrade OURO?")) return;
 
             try {
-                // Chama o endpoint de upgrade passando pela ponte PHP
+                // AJUSTE: Enviando 'plano': 'OURO' para disparar a lógica de MMN no Java
                 const res = await fetch('api_bridge.php?path=api/usuarios/processar-upgrade', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email: email, metodo: 'SALDO' })
+                    body: JSON.stringify({ 
+                        email: email, 
+                        metodo: 'SALDO',
+                        plano: 'OURO' // Essencial para o cálculo da comissão do Pai/Avô no Java
+                    })
                 });
 
                 if(res.ok) {
                     alert("SISTEMA ATUALIZADO: Protocolo OURO ativado com sucesso!");
                     
-                    // Recarrega todos os dados para atualizar o plano no localStorage
+                    // Sincroniza os novos dados do servidor (incluindo o novo plano e saldo reduzido)
                     const refreshRes = await fetch('api_bridge.php?path=api/usuarios/todos');
                     const freshUsers = await refreshRes.json();
                     const freshUser = freshUsers.find(user => user.email.toLowerCase() === email.toLowerCase());
@@ -122,15 +123,16 @@
                     
                     window.location.href = 'dashboard.html';
                 } else {
-                    const erro = await res.text();
-                    alert("FALHA NO UPGRADE: " + (erro || "Verifique seu saldo ou tente mais tarde."));
+                    const erroData = await res.json();
+                    alert("FALHA NO UPGRADE: " + (erroData.erro || "Verifique seu saldo ou tente mais tarde."));
                 }
             } catch (err) {
                 alert("ERRO DE COMUNICAÇÃO: O servidor de pagamento não respondeu.");
+                console.error(err);
             }
         }
 
-        // Inicializa carregando os dados mais recentes
+        // Inicializa carregando os dados mais recentes ao abrir a página
         window.onload = carregarSaldo;
     </script>
 </body>

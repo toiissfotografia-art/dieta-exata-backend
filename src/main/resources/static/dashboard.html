@@ -40,7 +40,6 @@
         .btn-action { background: var(--neon); color: black; border: none; padding: 12px 20px; border-radius: 5px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; }
         .copy-link { background: #111; padding: 10px; border: 1px dashed #444; border-radius: 5px; font-size: 12px; word-break: break-all; margin: 10px 0; cursor: pointer; }
 
-        /* Novo Estilo: Campo de Transferência */
         .transfer-input { background: #000; border: 1px solid #333; color: white; padding: 10px; border-radius: 5px; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
         .transfer-input:focus { border-color: var(--neon); outline: none; }
 
@@ -96,7 +95,7 @@
                 <hr style="border: 0; border-top: 1px solid #222; margin: 30px 0;">
                 
                 <h3 style="font-family: 'Orbitron'; color: var(--neon); font-size: 16px;">TRANSFERÊNCIA DE SALDO</h3>
-                <p style="font-size: 12px; color: #888;">Envie fundos instantaneamente para outro membro.</p>
+                <p style="font-size: 12px; color: #888;">Envie fundos instantaneamente para outro membro da rede.</p>
                 <input type="email" id="transf-email" class="transfer-input" placeholder="E-mail do destinatário">
                 <input type="number" id="transf-valor" class="transfer-input" placeholder="Valor (R$)">
                 <button class="btn-action" style="background: #1a1a1a; color: var(--neon); border: 1px solid var(--neon);" onclick="executarTransferencia()">EFETUAR TRANSFERÊNCIA</button>
@@ -120,7 +119,6 @@
 
         const user = JSON.parse(sessao);
 
-        // --- ATUALIZAÇÃO DE DADOS EM TEMPO REAL ---
         async function loadDashboardData() {
             try {
                 const res = await fetch('api_bridge.php?path=api/usuarios/todos');
@@ -128,16 +126,20 @@
                 const currentUser = users.find(u => u.email.toLowerCase() === user.email.toLowerCase());
 
                 if (currentUser) {
-                    document.getElementById('user-name').innerText = `OLÁ, ${currentUser.nome.split(' ')[0]}`;
+                    document.getElementById('user-name').innerText = `OLÁ, ${currentUser.nome.split(' ')[0].toUpperCase()}`;
                     document.getElementById('user-plan').innerText = currentUser.plano || "BRONZE";
                     document.getElementById('balance').innerText = `R$ ${parseFloat(currentUser.saldoDisponivel || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                    document.getElementById('total-earnings').innerText = `R$ ${parseFloat(currentUser.saldoTotal || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                     
-                    const indicados = users.filter(u => u.indicadorEmail && u.indicadorEmail.toLowerCase() === currentUser.email.toLowerCase());
+                    // Soma ganhos diretos e indiretos para o Total
+                    const ganhosTotais = (currentUser.ganhosDiretos || 0) + (currentUser.ganhosIndiretos || 0);
+                    document.getElementById('total-earnings').innerText = `R$ ${ganhosTotais.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                    
+                    // Conta indicados diretos (Nível 1)
+                    const indicados = users.filter(u => u.indicadoPor && u.indicadoPor.toLowerCase() === currentUser.email.toLowerCase());
                     document.getElementById('referrals').innerText = indicados.length;
 
-                    // LINK CORRIGIDO: Agora usa o domínio e o parâmetro ref
-                    const link = `${window.location.origin}/planos.html?ref=${currentUser.email}`;
+                    // Geração dinâmica do link de convite
+                    const link = `${window.location.origin}/cadastro.html?ref=${encodeURIComponent(currentUser.email)}`;
                     document.getElementById('affiliate-link').innerText = link;
 
                     if (currentUser.dietaAtual) {
@@ -147,51 +149,65 @@
                             <button class="btn-action" onclick="location.href='configurar-dieta.html'">VER PROTOCOLO</button>
                         `;
                     }
+                    // Atualiza a sessão local com dados novos do servidor
                     localStorage.setItem('usuarioLogado', JSON.stringify(currentUser));
                 }
             } catch (err) {
-                console.error("Erro ao carregar dados do Dashboard:", err);
+                console.error("Erro ao carregar Dashboard:", err);
             }
         }
 
-        // --- INCLUSÃO: LÓGICA DE TRANSFERÊNCIA ---
         async function executarTransferencia() {
-    const emailDest = document.getElementById('transf-email').value.trim();
-    const valor = parseFloat(document.getElementById('transf-valor').value);
-    const remetente = JSON.parse(localStorage.getItem('usuarioLogado'));
+            const emailDest = document.getElementById('transf-email').value.trim();
+            const valor = parseFloat(document.getElementById('transf-valor').value);
+            const remetente = JSON.parse(localStorage.getItem('usuarioLogado'));
 
-    if (!emailDest || isNaN(valor) || valor <= 0) {
-        alert("Preencha o e-mail e um valor válido.");
-        return;
-    }
+            if (!emailDest || isNaN(valor) || valor <= 0) {
+                alert("Preencha o e-mail e um valor válido.");
+                return;
+            }
 
-    try {
-        const res = await fetch('api_bridge.php?path=api/usuarios/transferir', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                emailOrigem: remetente.email, // Ajustado para bater com o Java
-                emailDestino: emailDest,       // Ajustado para bater com o Java
-                valor: valor
-            })
-        });
+            if (valor > remetente.saldoDisponivel) {
+                alert("Saldo insuficiente para esta operação.");
+                return;
+            }
 
-        if (res.ok) {
-            alert("Transferência realizada!");
-            loadDashboardData();
-        } else {
-            const erroMsg = await res.text();
-            alert("Erro: " + erroMsg);
+            try {
+                const res = await fetch('api_bridge.php?path=api/usuarios/transferir', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        emailOrigem: remetente.email,
+                        emailDestino: emailDest,
+                        valor: valor
+                    })
+                });
+
+                if (res.ok) {
+                    alert("SISTEMA: Transferência de créditos concluída com sucesso!");
+                    loadDashboardData();
+                    document.getElementById('transf-email').value = '';
+                    document.getElementById('transf-valor').value = '';
+                } else {
+                    const erroMsg = await res.text();
+                    alert("FALHA: " + (erroMsg || "Destinatário não encontrado."));
+                }
+            } catch (err) {
+                alert("ERRO DE CONEXÃO: Terminal central offline.");
+            }
         }
-    } catch (err) {
-        alert("Erro ao conectar com o servidor.");
-    }
-}
 
         function copyLink() {
             const link = document.getElementById('affiliate-link').innerText;
             navigator.clipboard.writeText(link).then(() => {
-                alert("Link de indicação copiado!");
+                const box = document.getElementById('affiliate-link');
+                const originalText = box.innerText;
+                box.innerText = "COPIADO COM SUCESSO!";
+                box.style.color = "var(--green)";
+                setTimeout(() => { 
+                    box.innerText = originalText;
+                    box.style.color = "white";
+                }, 2000);
             });
         }
 

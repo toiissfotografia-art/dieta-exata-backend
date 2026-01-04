@@ -41,6 +41,7 @@
 
         .badge { padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
         .badge-ouro { background: var(--gold); color: black; }
+        .badge-prata { background: #c0c0c0; color: black; }
         .badge-bronze { background: #444; color: white; }
 
         .section-title { font-family: 'Orbitron'; font-size: 18px; margin: 40px 0 15px 0; color: var(--gold); border-left: 4px solid var(--gold); padding-left: 15px; }
@@ -67,25 +68,25 @@
                 <div class="value" id="total-estornos">R$ 0,00</div>
             </div>
             <div class="stat-card">
-                <h3>Receita Estimada</h3>
+                <h3>Receita Bruta Estimada</h3>
                 <div class="value" id="total-receita">R$ 0,00</div>
             </div>
         </div>
 
-        <div class="section-title">GERENCIAMENTO DE MEMBROS E FLUXO PIX</div>
+        <div class="section-title">GERENCIAMENTO DE MEMBROS E FLUXO MMN</div>
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
                         <th>UTILIZADOR</th>
-                        <th>PLANO</th>
+                        <th>PLANO ATUAL</th>
                         <th>SALDO DISP.</th>
                         <th>INDICADO POR</th>
-                        <th>AÇÕES</th>
+                        <th>AÇÕES OPERACIONAIS</th>
                     </tr>
                 </thead>
                 <tbody id="user-table-body">
-                    <tr><td colspan="5" style="text-align:center; padding:20px;">Conectando ao Terminal no Render...</td></tr>
+                    <tr><td colspan="5" style="text-align:center; padding:20px;">Sincronizando com o Mainframe...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -97,29 +98,29 @@
             <p id="modal-user-email" style="font-size: 12px; color: #888;"></p>
             
             <label style="font-size: 12px; display: block; text-align: left; color: #aaa;">Valor (R$):</label>
-            <input type="number" id="novo-saldo" placeholder="0.00">
+            <input type="number" id="novo-saldo" placeholder="0.00" step="0.01">
             
             <div id="estorno-info" style="display:none; font-size: 11px; color: var(--red); margin-bottom: 10px;">
                 * Esta ação reduzirá o saldo e aumentará o log de estornos.
             </div>
 
             <button class="btn-action btn-saldo" style="width: 100%; margin-bottom: 10px;" onclick="salvarAcao()">CONFIRMAR OPERAÇÃO</button>
-            <button class="btn-action" style="width: 100%; background: #333; color: white;" onclick="fecharModal()">FECHAR</button>
+            <button class="btn-action" style="width: 100%; background: #333; color: white;" onclick="fecharModal()">CANCELAR</button>
         </div>
     </div>
 
     <script>
-        // DEFINA AQUI A URL DO SEU RENDER PARA NÃO DEPENDER DO PHP
-        const API_BASE = "https://dieta-exata-backend-1.onrender.com/api/usuarios";
+        // Utilizando a bridge para evitar erros de segurança e CORS
+        const API_PATH = "api_bridge.php?path=api/usuarios";
         
         let usuarioSelecionado = null;
         let tipoAcao = 'SALDO';
 
         function verificarAcesso() {
             const user = JSON.parse(localStorage.getItem('usuarioLogado'));
-            // O Admin Mestre deve poder acessar
+            // Rigorosa trava de segurança para o Admin Mestre
             if (!user || user.email !== 'toiiss@dietaexata.com.br') {
-                alert("ACESSO NEGADO: Apenas o Administrador Mestre pode acessar esta área.");
+                alert("ACESSO NEGADO: Identidade não autorizada no Terminal Mestre.");
                 window.location.href = 'index.html';
                 return false;
             }
@@ -128,9 +129,9 @@
 
         async function carregarDadosAdmin() {
             if (!verificarAcesso()) return;
+            
             try {
-                // Chamada direta para o Render
-                const res = await fetch(`${API_BASE}/todos`);
+                const res = await fetch(`${API_PATH}/todos`);
                 const users = await res.json();
                 
                 const tableBody = document.getElementById('user-table-body');
@@ -144,8 +145,10 @@
                     custodiaTotal += (u.saldoDisponivel || 0);
                     estornosTotais += (u.saldoSolicitado || 0);
                     
+                    // Cálculo de receita baseado no plano
                     if(u.plano === 'OURO') receitaTotal += 79.99;
-                    if(u.plano === 'PRATA') receitaTotal += 49.99;
+                    else if(u.plano === 'PRATA') receitaTotal += 49.99;
+                    else if(u.plano === 'BRONZE') receitaTotal += 19.99;
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
@@ -154,12 +157,12 @@
                             <small style="color:#888">${u.email}</small>
                         </td>
                         <td>
-                            <span class="badge ${u.plano === 'OURO' ? 'badge-ouro' : 'badge-bronze'}">${u.plano || 'BRONZE'}</span>
+                            <span class="badge ${u.plano === 'OURO' ? 'badge-ouro' : (u.plano === 'PRATA' ? 'badge-prata' : 'badge-bronze')}">${u.plano || 'BRONZE'}</span>
                         </td>
                         <td style="color:var(--neon)">R$ ${(u.saldoDisponivel || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                        <td>${u.indicadoPor || '<span style="color:#333">Direto</span>'}</td>
+                        <td>${u.indicadoPor || '<span style="color:#333">DIRETO</span>'}</td>
                         <td>
-                            <button class="btn-action btn-upgrade" onclick="ativarUsuario('${u.email}')">ATIVAR</button>
+                            <button class="btn-action btn-upgrade" title="Ativar MMN" onclick="ativarUsuario('${u.email}')">ATIVAR</button>
                             <button class="btn-action btn-saldo" onclick="abrirModal('${u.email}', ${u.saldoDisponivel}, 'SALDO')">SALDO</button>
                             <button class="btn-action btn-refund" onclick="abrirModal('${u.email}', 0, 'ESTORNO')">ESTORNO</button>
                             <button class="btn-action btn-delete" onclick="eliminarUsuario('${u.email}')">DEL</button>
@@ -174,29 +177,35 @@
                 document.getElementById('total-receita').innerText = `R$ ${receitaTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
 
             } catch (err) { 
-                console.error("Erro:", err);
-                document.getElementById('user-table-body').innerHTML = '<tr><td colspan="5" style="color:red; text-align:center;">Erro ao conectar com o Render.</td></tr>';
+                console.error("Erro no Terminal:", err);
+                document.getElementById('user-table-body').innerHTML = '<tr><td colspan="5" style="color:red; text-align:center;">ERRO DE SINCRONIZAÇÃO COM O BANCO DE DADOS.</td></tr>';
             }
         }
 
+        // --- INCLUSÃO: ATIVAÇÃO COM LÓGICA DE MMN (PAI E AVÔ) ---
         async function ativarUsuario(email) {
-            if(!confirm(`Deseja ativar e processar upgrade para ${email}?`)) return;
+            if(!confirm(`ATIVAR PROTOCOLO: Deseja validar o upgrade de ${email} e distribuir comissões de rede?`)) return;
             
             try {
-                const res = await fetch(`${API_BASE}/processar-upgrade`, {
+                // Esta chamada dispara o método no Java que paga o Pai e o Avô
+                const res = await fetch(`${API_PATH}/processar-upgrade`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email: email, metodo: 'ADMIN_MANUAL' })
+                    body: JSON.stringify({ 
+                        email: email, 
+                        metodo: 'ADMIN_MANUAL',
+                        plano: 'OURO' // Define como Ouro por padrão na ativação admin
+                    })
                 });
 
                 if(res.ok) { 
-                    alert("Usuário Ativado com Sucesso!"); 
+                    alert("PROTOCOLO ATIVADO: Comissões distribuídas e plano atualizado."); 
                     carregarDadosAdmin(); 
                 } else {
-                    alert("Erro ao ativar usuário no servidor.");
+                    alert("FALHA NA ATIVAÇÃO: Verifique os logs do Java.");
                 }
             } catch (err) { 
-                alert("Falha de comunicação com o servidor."); 
+                alert("ERRO CRÍTICO: Servidor fora de linha."); 
             }
         }
 
@@ -217,31 +226,31 @@
             const endpoint = tipoAcao === 'SALDO' ? 'ajustar-saldo' : 'estornar';
 
             try {
-                const res = await fetch(`${API_BASE}/${endpoint}`, {
+                const res = await fetch(`${API_PATH}/${endpoint}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ email: usuarioSelecionado, valor: valor })
                 });
 
                 if(res.ok) {
-                    alert("Operação concluída!");
+                    alert("SISTEMA ATUALIZADO!");
                     fecharModal();
                     carregarDadosAdmin();
                 }
-            } catch (err) { alert("Erro ao processar."); }
+            } catch (err) { alert("ERRO AO SALVAR DADOS."); }
         }
 
         async function eliminarUsuario(email) {
-            if(!confirm(`⚠️ ATENÇÃO: Deseja apagar definitivamente ${email}?`)) return;
+            if(!confirm(`⚠️ DELEÇÃO PERMANENTE: Confirmar exclusão de ${email}?`)) return;
             try {
-                const res = await fetch(`${API_BASE}/deletar/${email}`, {
+                const res = await fetch(`${API_PATH}/deletar/${email}`, {
                     method: 'DELETE'
                 });
                 if(res.ok) {
-                    alert("Usuário removido.");
+                    alert("MEMBRO REMOVIDO DO SISTEMA.");
                     carregarDadosAdmin();
                 }
-            } catch (err) { alert("Erro ao deletar."); }
+            } catch (err) { alert("ERRO AO EXCLUIR."); }
         }
 
         window.onload = carregarDadosAdmin;

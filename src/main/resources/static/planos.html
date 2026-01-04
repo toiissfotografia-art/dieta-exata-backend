@@ -112,25 +112,29 @@
             const ref = urlParams.get('ref');
             
             if (ref) {
-                // Limpeza e persistência do e-mail do indicador
-                const indicadorLimpo = ref.toLowerCase().trim();
+                // INCLUSÃO: Decodifica e limpa o e-mail para garantir a conexão MMN
+                const indicadorLimpo = decodeURIComponent(ref).toLowerCase().trim();
                 localStorage.setItem('indicador_email', indicadorLimpo);
                 console.log("Rastreamento de indicação ativo: " + indicadorLimpo);
             }
         };
 
         function comprar(plano) {
-            // Salva a escolha do usuário para processar no cadastro/pagamento
+            // Salva a escolha do usuário para o fluxo de cadastro
             localStorage.setItem('plano_escolhido', plano);
+            
+            // INCLUSÃO: Define o valor para conferência futura
+            let valor = plano === 'OURO' ? 79.99 : (plano === 'PRATA' ? 49.99 : 19.99);
+            localStorage.setItem('valor_plano', valor);
             
             // Recupera o indicador salvo no carregamento da página
             const ref = localStorage.getItem('indicador_email');
             
-            // Redireciona para o cadastro mantendo o parâmetro de referência para segurança extra
+            // Redireciona para o cadastro com os parâmetros necessários para o MMN no Java
             if (ref) {
-                window.location.href = `cadastro.html?ref=${encodeURIComponent(ref)}`;
+                window.location.href = `cadastro.html?ref=${encodeURIComponent(ref)}&plano=${plano}`;
             } else {
-                window.location.href = 'cadastro.html';
+                window.location.href = `cadastro.html?plano=${plano}`;
             }
         }
     </script>
