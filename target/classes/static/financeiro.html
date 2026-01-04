@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>FINANCEIRO | DIETA EXATA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <script src="config.js"></script>
+    <style>
+        :root { --neon: #00f2ff; --bg: #050505; --card: #0d0d0d; --green: #2ecc71; }
+        body { background: var(--bg); color: white; font-family: 'Rajdhani'; margin: 0; display: flex; min-height: 100vh; }
+        
+        .sidebar { width: 250px; background: #000; border-right: 1px solid #222; padding: 30px 20px; display: flex; flex-direction: column; gap: 20px; }
+        .nav-link { color: #888; text-decoration: none; padding: 12px; border-radius: 5px; font-family: 'Orbitron'; font-size: 13px; }
+        .nav-link.active { background: #111; color: white; border-left: 3px solid var(--neon); }
+
+        .main { flex: 1; padding: 40px; }
+        .balance-hero { background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%); border: 1px solid var(--neon); padding: 40px; border-radius: 20px; text-align: center; margin-bottom: 30px; }
+        .balance-value { font-family: 'Orbitron'; font-size: 48px; color: var(--green); text-shadow: 0 0 15px rgba(46, 204, 113, 0.3); }
+        
+        .grid-info { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .info-card { background: var(--card); border: 1px solid #222; padding: 20px; border-radius: 15px; }
+        
+        .btn-withdraw { background: var(--neon); color: black; border: none; padding: 15px 30px; border-radius: 8px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 15px; color: #666; font-size: 12px; font-family: 'Orbitron'; border-bottom: 1px solid #222; }
+        td { padding: 15px; border-bottom: 1px solid #111; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo" style="font-family:'Orbitron'; color:var(--neon); text-align:center; margin-bottom:30px;">DIETA EXATA</div>
+        <a href="dashboard.html" class="nav-link">DASHBOARD</a>
+        <a href="rede.html" class="nav-link">MINHA REDE</a>
+        <a href="financeiro.html" class="nav-link active">FINANCEIRO</a>
+        <a href="index.html" class="nav-link" style="color:#ff4444; margin-top:auto;">SAIR</a>
+    </aside>
+
+    <main class="main">
+        <div class="balance-hero">
+            <small style="font-family:'Orbitron'; color:var(--neon);">SALDO DISPONÍVEL</small>
+            <div class="balance-value" id="disp-balance">R$ 0,00</div>
+            <button class="btn-withdraw" onclick="solicitarSaque()">SOLICITAR SAQUE VIA PIX</button>
+        </div>
+
+        <div class="grid-info">
+            <div class="info-card">
+                <small>GANHOS DIRETOS (N1)</small>
+                <div id="ganhos-diretos" style="font-size: 24px; font-family:'Orbitron'; margin-top:10px;">R$ 0,00</div>
+            </div>
+            <div class="info-card">
+                <small>GANHOS INDIRETOS (N2/N3)</small>
+                <div id="ganhos-indiretos" style="font-size: 24px; font-family:'Orbitron'; margin-top:10px; color: var(--neon);">R$ 0,00</div>
+            </div>
+        </div>
+
+        <h3 style="font-family:'Orbitron';">HISTÓRICO DE COMISSÕES</h3>
+        <div class="info-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>DATA</th>
+                        <th>ORIGEM</th>
+                        <th>NÍVEL</th>
+                        <th>VALOR</th>
+                    </tr>
+                </thead>
+                <tbody id="extrato-corpo">
+                    </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        async function loadFinanceiro() {
+            const sessao = JSON.parse(localStorage.getItem('usuarioLogado'));
+            try {
+                const res = await fetch('api_bridge.php?path=api/usuarios/todos');
+                const users = await res.json();
+                const eu = users.find(u => u.email === sessao.email);
+
+                if(eu) {
+                    document.getElementById('disp-balance').innerText = `R$ ${eu.saldoDisponivel.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+                    document.getElementById('ganhos-diretos').innerText = `R$ ${(eu.ganhosDiretos || 0).toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+                    document.getElementById('ganhos-indiretos').innerText = `R$ ${(eu.ganhosIndiretos || 0).toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+                    
+                    // Simulação de extrato (baseado nos indicados que já pagaram)
+                    const indicados = users.filter(u => u.indicadoPor === eu.email);
+                    const extrato = document.getElementById('extrato-corpo');
+                    
+                    if(indicados.length === 0) {
+                        extrato.innerHTML = "<tr><td colspan='4' style='text-align:center; color:#555;'>Nenhuma comissão recebida ainda.</td></tr>";
+                    } else {
+                        extrato.innerHTML = indicados.map(ind => `
+                            <tr>
+                                <td>${ind.dataUltimaDieta || 'Recente'}</td>
+                                <td>${ind.nome}</td>
+                                <td>Nível 1</td>
+                                <td style="color:var(--green)">+ R$ ${(ind.plano === 'OURO' ? 40 : 10).toFixed(2)}</td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+            } catch (err) {
+                console.error("Erro financeiro:", err);
+            }
+        }
+
+        function solicitarSaque() {
+            alert("SISTEMA: O pedido de saque foi enviado para análise. Prazo: 24h úteis.");
+        }
+
+        window.onload = loadFinanceiro;
+    </script>
+</body>
+</html>

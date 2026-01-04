@@ -2,258 +2,146 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CENTRAL DE CONTROLO | ADMIN</title>
+    <title>ADMIN | CENTRAL DE COMANDO</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <script src="config.js"></script>
     <style>
-        :root { --neon: #00f2ff; --bg: #050505; --card: #0d0d0d; --gold: #ffac00; --red: #ff4444; --green: #2ecc71; }
+        :root { --neon: #2ecc71; --bg: #050505; --red: #ff4444; --blue: #00f2ff; }
         body { background: var(--bg); color: white; font-family: 'Rajdhani'; margin: 0; padding: 20px; }
-        .container { max-width: 1300px; margin: 0 auto; }
-        h1 { font-family: 'Orbitron'; color: var(--neon); text-align: center; text-transform: uppercase; letter-spacing: 3px; }
-        
-        /* Stats & Contabilidade */
-        .admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: var(--card); border: 1px solid #222; padding: 20px; border-radius: 10px; text-align: center; position: relative; }
-        .stat-card h3 { margin: 0; font-size: 14px; color: #888; }
-        .stat-card .value { font-family: 'Orbitron'; font-size: 24px; color: var(--neon); margin-top: 10px; }
-        .stat-card.finance { border-color: var(--green); }
-        .stat-card.danger { border-color: var(--red); }
-
-        /* Tabela */
-        .table-container { background: var(--card); border: 1px solid #222; border-radius: 10px; overflow-x: auto; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background: #111; padding: 15px; font-family: 'Orbitron'; font-size: 12px; color: var(--neon); border-bottom: 1px solid #222; }
-        td { padding: 15px; border-bottom: 1px solid #111; font-size: 14px; }
-        tr:hover { background: #151515; }
-
-        /* Botões */
-        .btn-action { padding: 8px 12px; border: none; border-radius: 4px; font-family: 'Orbitron'; font-size: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-right: 5px; }
-        .btn-upgrade { background: var(--gold); color: black; }
-        .btn-saldo { background: var(--neon); color: black; }
-        .btn-refund { background: #555; color: white; }
+        h1 { font-family: 'Orbitron'; color: var(--neon); text-align: center; text-shadow: 0 0 10px var(--neon); }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: #0d0d0d; padding: 20px; border-radius: 10px; border: 1px solid #222; text-align: center; }
+        table { width: 100%; border-collapse: collapse; background: #0d0d0d; border-radius: 10px; overflow: hidden; }
+        th { background: #111; padding: 15px; color: var(--neon); font-family: 'Orbitron'; font-size: 12px; text-align: left; }
+        td { padding: 12px 15px; border-bottom: 1px solid #222; font-size: 14px; }
+        .btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-family: 'Orbitron'; font-size: 10px; font-weight: bold; transition: 0.3s; }
+        .btn-activate { background: var(--neon); color: black; margin-right: 5px; }
         .btn-delete { background: var(--red); color: white; }
-
-        /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: #111; padding: 30px; border: 1px solid var(--neon); border-radius: 10px; width: 350px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 15px 0; background: #000; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box; }
-
-        .badge { padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
-        .badge-ouro { background: var(--gold); color: black; }
-        .badge-prata { background: #c0c0c0; color: black; }
-        .badge-bronze { background: #444; color: white; }
-
-        .section-title { font-family: 'Orbitron'; font-size: 18px; margin: 40px 0 15px 0; color: var(--gold); border-left: 4px solid var(--gold); padding-left: 15px; }
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .active { background: rgba(46, 204, 113, 0.2); color: var(--neon); }
+        .expired { background: rgba(255, 68, 68, 0.2); color: var(--red); }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>TERMINAL_CONTROL_OS [ADMIN]</h1>
-        
-        <div class="section-title">RELATÓRIO CONTÁBIL GLOBAL</div>
-        <div class="admin-stats">
-            <div class="stat-card">
-                <h3>Utilizadores Totais</h3>
-                <div class="value" id="total-users">0</div>
-            </div>
-            <div class="stat-card finance">
-                <h3>Saldo em Custódia</h3>
-                <div class="value" id="total-custodia">R$ 0,00</div>
-                <small style="color: #666;">(Soma de todos os saldos)</small>
-            </div>
-            <div class="stat-card finance">
-                <h3>Total Estornos</h3>
-                <div class="value" id="total-estornos">R$ 0,00</div>
-            </div>
-            <div class="stat-card">
-                <h3>Receita Bruta Estimada</h3>
-                <div class="value" id="total-receita">R$ 0,00</div>
-            </div>
-        </div>
+<div class="container">
+    <h1>TERMINAL ADMINISTRATIVO</h1>
 
-        <div class="section-title">GERENCIAMENTO DE MEMBROS E FLUXO MMN</div>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>UTILIZADOR</th>
-                        <th>PLANO ATUAL</th>
-                        <th>SALDO DISP.</th>
-                        <th>INDICADO POR</th>
-                        <th>AÇÕES OPERACIONAIS</th>
-                    </tr>
-                </thead>
-                <tbody id="user-table-body">
-                    <tr><td colspan="5" style="text-align:center; padding:20px;">Sincronizando com o Mainframe...</td></tr>
-                </tbody>
-            </table>
+    <div class="stats-bar">
+        <div class="stat-card">
+            <small>TOTAL USUÁRIOS</small>
+            <div id="total-users" style="font-size: 24px; color: var(--blue);">0</div>
+        </div>
+        <div class="stat-card">
+            <small>ATIVOS HOJE</small>
+            <div id="active-users" style="font-size: 24px; color: var(--neon);">0</div>
+        </div>
+        <div class="stat-card">
+            <small>AGUARDANDO PIX</small>
+            <div id="pending-users" style="font-size: 24px; color: #ffac00;">0</div>
         </div>
     </div>
 
-    <div id="modalSaldo" class="modal">
-        <div class="modal-content">
-            <h3 id="modal-titulo" style="font-family: 'Orbitron'; color: var(--neon);">AJUSTAR SALDO</h3>
-            <p id="modal-user-email" style="font-size: 12px; color: #888;"></p>
-            
-            <label style="font-size: 12px; display: block; text-align: left; color: #aaa;">Valor (R$):</label>
-            <input type="number" id="novo-saldo" placeholder="0.00" step="0.01">
-            
-            <div id="estorno-info" style="display:none; font-size: 11px; color: var(--red); margin-bottom: 10px;">
-                * Esta ação reduzirá o saldo e aumentará o log de estornos.
-            </div>
+    <table>
+        <thead>
+            <tr>
+                <th>NOME</th>
+                <th>E-MAIL</th>
+                <th>PLANO</th>
+                <th>EXPIRAÇÃO</th>
+                <th>AÇÕES</th>
+            </tr>
+        </thead>
+        <tbody id="user-table-body"></tbody>
+    </table>
+</div>
 
-            <button class="btn-action btn-saldo" style="width: 100%; margin-bottom: 10px;" onclick="salvarAcao()">CONFIRMAR OPERAÇÃO</button>
-            <button class="btn-action" style="width: 100%; background: #333; color: white;" onclick="fecharModal()">CANCELAR</button>
-        </div>
-    </div>
+<script>
+    async function fetchUsers() {
+        try {
+            const res = await fetch('api_bridge.php?path=api/usuarios/todos');
+            const users = await res.json();
+            renderTable(users);
+        } catch (err) {
+            console.error("Erro ao buscar usuários:", err);
+        }
+    }
 
-    <script>
-        // Utilizando a bridge para evitar erros de segurança e CORS
-        const API_PATH = "api_bridge.php?path=api/usuarios";
+    function renderTable(users) {
+        const tbody = document.getElementById('user-table-body');
+        const agora = new Date();
+        document.getElementById('total-users').innerText = users.length;
+        let ativos = 0;
+
+        tbody.innerHTML = users.map(u => {
+            const exp = new Date(u.dataExpiracao);
+            const isAtivo = exp > agora;
+            if(isAtivo) ativos++;
+
+            return `
+                <tr>
+                    <td>${u.nome}</td>
+                    <td>${u.email}</td>
+                    <td><b style="color:var(--blue)">${u.plano}</b></td>
+                    <td>
+                        <span class="status-badge ${isAtivo ? 'active' : 'expired'}">
+                            ${exp.toLocaleDateString('pt-BR')}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-activate" onclick="ativarUsuario('${u.email}')">ATIVAR MANUAL</button>
+                        <button class="btn btn-delete" onclick="deletarUsuario('${u.email}')">DELETAR</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
         
-        let usuarioSelecionado = null;
-        let tipoAcao = 'SALDO';
+        document.getElementById('active-users').innerText = ativos;
+        document.getElementById('pending-users').innerText = users.length - ativos;
+    }
 
-        function verificarAcesso() {
-            const user = JSON.parse(localStorage.getItem('usuarioLogado'));
-            // Rigorosa trava de segurança para o Admin Mestre
-            if (!user || user.email !== 'toiiss@dietaexata.com.br') {
-                alert("ACESSO NEGADO: Identidade não autorizada no Terminal Mestre.");
-                window.location.href = 'index.html';
-                return false;
+    // Lógica Corrigida baseada no seu UsuarioController.java
+    async function ativarUsuario(email) {
+        if(!confirm(`Confirmar ativação manual para: ${email}?`)) return;
+
+        try {
+            const res = await fetch('api_bridge.php?path=api/usuarios/processar-upgrade', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: email,
+                    metodo: "ADMIN_MANUAL" // Campo exigido pela sua lógica Java (linha 113)
+                })
+            });
+
+            const data = await res.json();
+
+            if(res.ok) {
+                alert("SUCESSO: " + (data.mensagem || "Usuário ativado!"));
+                fetchUsers();
+            } else {
+                alert("ERRO: " + (data.erro || "Falha no processamento."));
             }
-            return true;
+        } catch (err) {
+            alert("Erro na conexão com a API.");
         }
+    }
 
-        async function carregarDadosAdmin() {
-            if (!verificarAcesso()) return;
-            
-            try {
-                const res = await fetch(`${API_PATH}/todos`);
-                const users = await res.json();
-                
-                const tableBody = document.getElementById('user-table-body');
-                tableBody.innerHTML = '';
-
-                let custodiaTotal = 0;
-                let estornosTotais = 0;
-                let receitaTotal = 0;
-
-                users.forEach(u => {
-                    custodiaTotal += (u.saldoDisponivel || 0);
-                    estornosTotais += (u.saldoSolicitado || 0);
-                    
-                    // Cálculo de receita baseado no plano
-                    if(u.plano === 'OURO') receitaTotal += 79.99;
-                    else if(u.plano === 'PRATA') receitaTotal += 49.99;
-                    else if(u.plano === 'BRONZE') receitaTotal += 19.99;
-
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>
-                            <b>${u.nome}</b><br>
-                            <small style="color:#888">${u.email}</small>
-                        </td>
-                        <td>
-                            <span class="badge ${u.plano === 'OURO' ? 'badge-ouro' : (u.plano === 'PRATA' ? 'badge-prata' : 'badge-bronze')}">${u.plano || 'BRONZE'}</span>
-                        </td>
-                        <td style="color:var(--neon)">R$ ${(u.saldoDisponivel || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                        <td>${u.indicadoPor || '<span style="color:#333">DIRETO</span>'}</td>
-                        <td>
-                            <button class="btn-action btn-upgrade" title="Ativar MMN" onclick="ativarUsuario('${u.email}')">ATIVAR</button>
-                            <button class="btn-action btn-saldo" onclick="abrirModal('${u.email}', ${u.saldoDisponivel}, 'SALDO')">SALDO</button>
-                            <button class="btn-action btn-refund" onclick="abrirModal('${u.email}', 0, 'ESTORNO')">ESTORNO</button>
-                            <button class="btn-action btn-delete" onclick="eliminarUsuario('${u.email}')">DEL</button>
-                        </td>
-                    `;
-                    tableBody.appendChild(tr);
-                });
-
-                document.getElementById('total-users').innerText = users.length;
-                document.getElementById('total-custodia').innerText = `R$ ${custodiaTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                document.getElementById('total-estornos').innerText = `R$ ${estornosTotais.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                document.getElementById('total-receita').innerText = `R$ ${receitaTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-
-            } catch (err) { 
-                console.error("Erro no Terminal:", err);
-                document.getElementById('user-table-body').innerHTML = '<tr><td colspan="5" style="color:red; text-align:center;">ERRO DE SINCRONIZAÇÃO COM O BANCO DE DADOS.</td></tr>';
+    async function deletarUsuario(email) {
+        if(!confirm("TEM CERTEZA?")) return;
+        try {
+            const res = await fetch(`api_bridge.php?path=api/usuarios/deletar/${email}`, {
+                method: 'DELETE'
+            });
+            if(res.ok) {
+                alert("Removido.");
+                fetchUsers();
             }
-        }
+        } catch (err) { alert("Erro ao deletar."); }
+    }
 
-        // --- INCLUSÃO: ATIVAÇÃO COM LÓGICA DE MMN (PAI E AVÔ) ---
-        async function ativarUsuario(email) {
-            if(!confirm(`ATIVAR PROTOCOLO: Deseja validar o upgrade de ${email} e distribuir comissões de rede?`)) return;
-            
-            try {
-                // Esta chamada dispara o método no Java que paga o Pai e o Avô
-                const res = await fetch(`${API_PATH}/processar-upgrade`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        email: email, 
-                        metodo: 'ADMIN_MANUAL',
-                        plano: 'OURO' // Define como Ouro por padrão na ativação admin
-                    })
-                });
-
-                if(res.ok) { 
-                    alert("PROTOCOLO ATIVADO: Comissões distribuídas e plano atualizado."); 
-                    carregarDadosAdmin(); 
-                } else {
-                    alert("FALHA NA ATIVAÇÃO: Verifique os logs do Java.");
-                }
-            } catch (err) { 
-                alert("ERRO CRÍTICO: Servidor fora de linha."); 
-            }
-        }
-
-        function abrirModal(email, valor, tipo) {
-            usuarioSelecionado = email;
-            tipoAcao = tipo;
-            document.getElementById('modal-user-email').innerText = email;
-            document.getElementById('modal-titulo').innerText = tipo === 'SALDO' ? 'AJUSTAR SALDO' : 'ESTORNO DE VALOR';
-            document.getElementById('estorno-info').style.display = tipo === 'ESTORNO' ? 'block' : 'none';
-            document.getElementById('novo-saldo').value = valor;
-            document.getElementById('modalSaldo').style.display = 'flex';
-        }
-
-        function fecharModal() { document.getElementById('modalSaldo').style.display = 'none'; }
-
-        async function salvarAcao() {
-            const valor = parseFloat(document.getElementById('novo-saldo').value);
-            const endpoint = tipoAcao === 'SALDO' ? 'ajustar-saldo' : 'estornar';
-
-            try {
-                const res = await fetch(`${API_PATH}/${endpoint}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email: usuarioSelecionado, valor: valor })
-                });
-
-                if(res.ok) {
-                    alert("SISTEMA ATUALIZADO!");
-                    fecharModal();
-                    carregarDadosAdmin();
-                }
-            } catch (err) { alert("ERRO AO SALVAR DADOS."); }
-        }
-
-        async function eliminarUsuario(email) {
-            if(!confirm(`⚠️ DELEÇÃO PERMANENTE: Confirmar exclusão de ${email}?`)) return;
-            try {
-                const res = await fetch(`${API_PATH}/deletar/${email}`, {
-                    method: 'DELETE'
-                });
-                if(res.ok) {
-                    alert("MEMBRO REMOVIDO DO SISTEMA.");
-                    carregarDadosAdmin();
-                }
-            } catch (err) { alert("ERRO AO EXCLUIR."); }
-        }
-
-        window.onload = carregarDadosAdmin;
-    </script>
+    window.onload = fetchUsers;
+</script>
 </body>
 </html>
