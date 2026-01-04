@@ -2,119 +2,256 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CADASTRO | DIETA EXATA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <script src="config.js"></script>
+    
     <style>
-        :root { --neon: #00f2ff; --bg: #050505; --card: #0d0d0d; }
-        body { background: var(--bg); color: white; font-family: 'Rajdhani'; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .box { background: var(--card); padding: 40px; border-radius: 15px; border: 1px solid #222; width: 90%; max-width: 400px; box-shadow: 0 0 30px rgba(0, 242, 255, 0.1); }
-        h1 { font-family: 'Orbitron'; color: var(--neon); text-align: center; margin-bottom: 5px; }
-        .subtitle { text-align: center; color: #888; font-size: 12px; margin-bottom: 25px; letter-spacing: 2px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; background: #111; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
-        input:focus { border-color: var(--neon); outline: none; }
-        .btn { width: 100%; padding: 15px; background: var(--neon); color: black; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 10px; transition: 0.3s; }
-        .btn:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--neon); }
-        .btn:disabled { background: #444; cursor: not-allowed; opacity: 0.6; }
-        .ref-banner { background: rgba(0, 242, 255, 0.1); border: 1px solid var(--neon); padding: 10px; border-radius: 5px; font-size: 13px; text-align: center; margin-bottom: 20px; color: #fff; }
+        :root { 
+            --neon: #2ecc71; 
+            --bg: #050505; 
+            --card: #0d0d0d; 
+            --blue: #00f2ff; 
+            --red: #ff4444; 
+            --text-dim: #888;
+        }
+
+        body { 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .register-wrapper { 
+            width: 100%; 
+            max-width: 420px; 
+            background: var(--card); 
+            padding: 40px; 
+            border: 1px solid #1a1a1a; 
+            border-radius: 24px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
+        }
+
+        h1 { 
+            font-size: 22px; 
+            font-weight: 800; 
+            text-align: center; 
+            color: var(--neon); 
+            margin-bottom: 10px; 
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+
+        .step-info {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        
+        label { 
+            display: block; 
+            font-size: 11px; 
+            font-weight: 700; 
+            color: var(--text-dim); 
+            margin-bottom: 8px; 
+            text-transform: uppercase;
+            margin-left: 5px;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 16px; 
+            background: #000; 
+            border: 1px solid #222; 
+            border-radius: 12px; 
+            color: white; 
+            box-sizing: border-box; 
+            font-size: 15px; 
+            transition: 0.3s; 
+            font-family: 'Inter';
+        }
+
+        input:focus { 
+            border-color: var(--neon); 
+            outline: none; 
+            background: #080808;
+        }
+
+        input:disabled {
+            background: #111;
+            color: #555;
+            cursor: not-allowed;
+            border-color: #1a1a1a;
+        }
+
+        .btn-register { 
+            width: 100%; 
+            padding: 18px; 
+            background: var(--neon); 
+            color: #000; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: 800; 
+            font-size: 13px;
+            cursor: pointer; 
+            text-transform: uppercase; 
+            transition: 0.3s; 
+            margin-top: 10px;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-register:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.2); 
+        }
+
+        #status-msg { 
+            text-align: center; 
+            font-size: 12px; 
+            margin-top: 15px; 
+            font-weight: 700;
+            line-height: 1.5; 
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .login-link a {
+            color: var(--blue);
+            text-decoration: none;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h1>RECRUTAMENTO</h1>
-        <div class="subtitle">PROTOCOLO DE REDE v4.0</div>
+    <div class="register-wrapper">
+        <h1>CRIAR CONTA</h1>
+        <div class="step-info">Inicie sua jornada exata</div>
 
-        <div id="ref-section" style="display: none;" class="ref-banner">
-            Convidado por: <br><b id="ref-name" style="color:var(--neon)">-</b>
+        <div class="input-group">
+            <label>Nome Completo</label>
+            <input type="text" id="nome" placeholder="Ex: João Silva" required>
         </div>
+
+        <div class="input-group">
+            <label>Seu melhor E-mail</label>
+            <input type="email" id="email" placeholder="Ex: joao@email.com" required>
+        </div>
+
+        <div class="input-group">
+            <label>Criar Senha de Acesso</label>
+            <input type="password" id="senha" placeholder="Mínimo 6 caracteres" required>
+        </div>
+
+        <div class="input-group">
+            <label>ID de Indicação (Indicador)</label>
+            <input type="text" id="indicador" placeholder="Nenhum indicador" readonly>
+        </div>
+
+        <button id="btnCadastrar" class="btn-register" onclick="processarCadastro()">Finalizar e Ativar</button>
         
-        <input type="text" id="reg_nome" placeholder="Nome Completo" autocomplete="off">
-        <input type="email" id="reg_email" placeholder="E-mail do Novo Membro" autocomplete="new-password">
-        <input type="password" id="reg_senha" placeholder="Crie uma Senha" autocomplete="new-password">
-        
-        <input type="hidden" id="indicadorEmail">
-        
-        <button id="btnRegistrar" class="btn" onclick="registrar()">ATIVAR MINHA CONTA</button>
-        
-        <p style="text-align:center; font-size:13px; color: #666; margin-top: 20px;">
-            Já possui acesso? <a href="login.html" style="color:var(--neon); text-decoration: none;">Acessar Terminal</a>
-        </p>
+        <div id="status-msg"></div>
+
+        <div class="login-link">
+            Já tem uma conta? <a href="login.html">Fazer Login</a>
+        </div>
     </div>
 
     <script>
+        // Captura dados da URL e do LocalStorage para manter o MMN
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const refUrl = urlParams.get('ref');
-            const refLocal = localStorage.getItem('indicador_email');
+            const refURL = urlParams.get('ref');
+            const refStorage = localStorage.getItem('indicador_email');
+            const planoSelecionado = urlParams.get('plano') || localStorage.getItem('plano_escolhido') || 'BRONZE';
+
+            const indicadorFinal = refURL || refStorage;
             
-            // Tenta pegar o indicador da URL ou do LocalStorage (Persistência MMN)
-            const ref = refUrl || refLocal;
-            
-            if (ref) {
-                const indicador = decodeURIComponent(ref).toLowerCase().trim();
-                document.getElementById('indicadorEmail').value = indicador;
-                document.getElementById('ref-name').innerText = indicador;
-                document.getElementById('ref-section').style.display = 'block';
-                localStorage.setItem('indicador_email', indicador);
+            if (indicadorFinal) {
+                document.getElementById('indicador').value = indicadorFinal.toLowerCase().trim();
+                localStorage.setItem('indicador_email', indicadorFinal); // Garante a persistência
+            } else {
+                document.getElementById('indicador').value = "Direto (Sem Indicador)";
             }
         };
 
-        async function registrar() {
-            const btn = document.getElementById('btnRegistrar');
-            const nome = document.getElementById('reg_nome').value;
-            const email = document.getElementById('reg_email').value;
-            const senha = document.getElementById('reg_senha').value;
-            const indicadorEmail = document.getElementById('indicadorEmail').value;
+        async function processarCadastro() {
+            const btn = document.getElementById('btnCadastrar');
+            const status = document.getElementById('status-msg');
+            
+            const nome = document.getElementById('nome').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const senha = document.getElementById('senha').value;
+            const indicadoPor = localStorage.getItem('indicador_email') || ""; 
+            const plano = localStorage.getItem('plano_escolhido') || "BRONZE";
 
-            if(!nome || !email || !senha) {
-                alert("Preencha todos os campos para prosseguir.");
+            if (!nome || !email || !senha) {
+                status.style.color = "var(--red)";
+                status.innerText = "Por favor, preencha todos os campos.";
                 return;
             }
 
-            // O plano vem do localStorage (escolhido na página anterior) ou padrão BRONZE
-            const planoSelecionado = localStorage.getItem('plano_escolhido') || 'BRONZE';
-
-            const dados = {
-                nome: nome,
-                email: email.toLowerCase().trim(),
-                senha: senha,
-                indicadoPor: indicadorEmail, // Conecta ao atributo do Java
-                plano: planoSelecionado,
-                saldoDisponivel: 0.0,
-                saldoSolicitado: 0.0,
-                ganhosDiretos: 0.0,
-                ganhosIndiretos: 0.0,
-                nivel1count: 0,
-                nivel2count: 0,
-                nivel3count: 0
-            };
-
             btn.disabled = true;
             btn.innerText = "PROCESSANDO...";
+            status.style.color = "var(--blue)";
+            status.innerText = "Criando seu perfil no terminal...";
+
+            const dadosUsuario = {
+                nome: nome,
+                email: email,
+                senha: senha,
+                indicadoPor: indicadoPor,
+                plano: plano
+            };
 
             try {
-                const res = await fetch('api_bridge.php?path=api/usuarios/cadastrar', {
+                // Envio para o seu backend Java
+                const response = await fetch('api_bridge.php?path=api/usuarios/cadastrar', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(dados)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dadosUsuario)
                 });
 
-                if(res.ok) {
-                    alert("CADASTRO REALIZADO! Vamos para a ativação do seu plano.");
-                    // Redireciona para o checkout levando os dados
-                    window.location.href = `pix.html?email=${encodeURIComponent(dados.email)}&plano=${planoSelecionado}`;
+                const result = await response.text();
+
+                if (response.ok) {
+                    status.style.color = "var(--neon)";
+                    status.innerText = "CONTA CRIADA! Redirecionando para ativação...";
+                    
+                    // Salva dados básicos para o PIX
+                    localStorage.setItem('usuarioLogado', JSON.stringify({ email: email, nome: nome, plano: plano }));
+
+                    setTimeout(() => {
+                        window.location.href = `pix.html?email=${encodeURIComponent(email)}&plano=${plano}`;
+                    }, 2000);
                 } else {
-                    btn.disabled = false;
-                    btn.innerText = "ATIVAR MINHA CONTA";
-                    const msg = await res.text();
-                    alert("ERRO NO CADASTRO: " + (msg || "E-mail já cadastrado."));
+                    throw new Error(result || "Erro ao cadastrar.");
                 }
-            } catch (err) {
+
+            } catch (error) {
+                console.error("ERRO CADASTRO:", error);
                 btn.disabled = false;
-                btn.innerText = "ATIVAR MINHA CONTA";
-                alert("ERRO DE CONEXÃO: O servidor não respondeu.");
-                console.error(err);
+                btn.innerText = "Tentar Novamente";
+                status.style.color = "var(--red)";
+                status.innerText = error.message;
             }
         }
     </script>

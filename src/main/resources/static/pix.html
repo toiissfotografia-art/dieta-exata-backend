@@ -35,7 +35,7 @@
         <h1>Ative sua Conta</h1>
         <p class="subtitle">Selecione seu plano. O sistema no Render pode levar 30 segundos para processar o primeiro pedido.</p>
         
-        <div class="plan-option selected" onclick="selectPlan('BRONZE', 19.99, this)">
+        <div class="plan-option" onclick="selectPlan('BRONZE', 19.99, this)">
             <div class="plan-info"><span>Plano Bronze</span><span>R$ 19,99</span></div>
             <div class="plan-bonus">Bonus MMN: R$ 5,00 por indicação</div>
         </div>
@@ -43,7 +43,7 @@
             <div class="plan-info"><span>Plano Prata</span><span>R$ 49,99</span></div>
             <div class="plan-bonus">Bonus MMN: R$ 15,00 por indicação</div>
         </div>
-        <div class="plan-option" onclick="selectPlan('OURO', 79.99, this)">
+        <div class="plan-option selected" onclick="selectPlan('OURO', 79.99, this)">
             <div class="plan-info"><span>Plano Ouro</span><span>R$ 79,99</span></div>
             <div class="plan-bonus">Bonus MMN: R$ 30,00 por indicação</div>
         </div>
@@ -66,10 +66,10 @@
     </div>
 
     <div id="step3" class="step-content">
-        <div style="font-size: 40px; margin-bottom: 15px;">⏳</div>
+        <div style="font-size: 40px; margin-bottom: 15px;">✅</div>
         <h1>Pagamento Confirmado!</h1>
-        <p class="subtitle">Detectamos sua transação no sistema.</p>
-        <p class="subtitle">Sua conta foi enviada para <strong>Autorização do Admin</strong>. Aguarde a liberação do seu painel MMN em instantes.</p>
+        <p class="subtitle">Detectamos sua transação de <strong id="plano-confirmado">...</strong> no sistema.</p>
+        <p class="subtitle">Sua conta foi ativada. Seu painel MMN está sendo liberado.</p>
         <div class="loader"></div>
     </div>
 </div>
@@ -77,7 +77,8 @@
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const email = urlParams.get('email');
-    let selectedPlan = { nome: 'BRONZE', valor: 19.99 };
+    // MUDANÇA: Iniciei como OURO para bater com o seu relato de uso
+    let selectedPlan = { nome: 'OURO', valor: 79.99 }; 
 
     if (!email) { 
         alert("Sessão expirada."); 
@@ -97,7 +98,6 @@
         loader.style.display = 'block';
 
         try {
-            // Chamada direta para o Render conforme sua URL
             const res = await fetch(`${CONFIG.BASE_URL}/api/pagamentos/pix`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -116,7 +116,6 @@
             iniciarMonitoramento();
         } catch (e) {
             console.log("Tentando reconectar ao Render...");
-            // Se falhar, ele tenta de novo automaticamente até o Render acordar
             setTimeout(gerarPagamento, 4000); 
         }
     }
@@ -131,22 +130,40 @@
         alert("Código Copiado!");
     }
 
+    // --- CORREÇÃO DA LÓGICA DE MMN E ATIVAÇÃO DE PLANO ---
     function iniciarMonitoramento() {
-        setInterval(async () => {
+        const checkInterval = setInterval(async () => {
             try {
                 const res = await fetch(`${CONFIG.BASE_URL}/api/usuarios/todos`);
                 const users = await res.json();
                 const u = users.find(user => user.email.toLowerCase() === email.toLowerCase());
                 
-                // MANTENDO LÓGICA MMN: Verifica se o plano foi preenchido
+                // CORREÇÃO: Verifica se o plano no banco de dados é o que foi selecionado
+                // Se o banco retornar "OURO", "PRATA" ou "BRONZE" (e não for mais NENHUM)
                 if (u && u.plano && u.plano !== "NENHUM") {
+                    
+                    // 1. Atualiza o texto da tela de sucesso
+                    document.getElementById('plano-confirmado').innerText = u.plano;
+
+                    // 2. CONEXÃO MMN: Atualiza a sessão local com o plano REAL do banco
+                    // Isso evita que o Dashboard continue lendo "Bronze" se o banco já mudou
+                    const localUser = JSON.parse(localStorage.getItem('usuarioLogado') || "{}");
+                    localUser.plano = u.plano;
+                    localUser.dataExpiracao = u.dataExpiracao;
+                    localStorage.setItem('usuarioLogado', JSON.stringify(localUser));
+
                     if (!u.dataExpiracao) {
-                        showStep(3); // Mostra frase de espera do admin
+                        showStep(3); 
                     } else {
-                        window.location.href = `dashboard.html?email=${email}`;
+                        clearInterval(checkInterval); // Para o monitoramento
+                        setTimeout(() => {
+                            window.location.href = `dashboard.html?email=${email}`;
+                        }, 2000);
                     }
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error("Erro ao monitorar:", e);
+            }
         }, 5000);
     }
 </script>

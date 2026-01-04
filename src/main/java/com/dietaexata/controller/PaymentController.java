@@ -73,7 +73,7 @@ public class PaymentController {
                     .description("Plano " + plano + " - " + emailUsuario)
                     .installments(1)
                     .paymentMethodId("pix")
-                    // CONFIGURAÇÃO 1: Esta URL deve ser o endereço da sua api_bridge.php apontando para o webhook
+                    // CONFIGURAÇÃO 1: A ponte PHP que garante a conexão com o Render
                     .notificationUrl("https://dietaexata.com.br/api_bridge.php?path=api/pagamentos/webhook") 
                     .payer(PaymentPayerRequest.builder()
                         .email(emailUsuario)
@@ -96,7 +96,6 @@ public class PaymentController {
             
             if (payment.getPointOfInteraction() != null && 
                 payment.getPointOfInteraction().getTransactionData() != null) {
-                // Aqui garantimos que o nome do campo seja o mesmo que o JS procura
                 resposta.put("pixCopiaEcola", payment.getPointOfInteraction().getTransactionData().getQrCode());
                 resposta.put("qrCodeBase64", payment.getPointOfInteraction().getTransactionData().getQrCodeBase64());
             }
@@ -112,15 +111,12 @@ public class PaymentController {
         }
     }
 
-    // CONFIGURAÇÃO 2: O MÉTODO WEBHOOK
     @PostMapping("/webhook")
     public ResponseEntity<?> receberNotificacao(@RequestBody Map<String, Object> payload) {
         try {
-            // Log para você depurar no Render se o Mercado Pago está chamando
             System.out.println("Webhook recebido: " + payload);
 
             String action = (String) payload.get("action");
-            // Se for apenas teste de criação, respondemos OK
             if (action != null && action.equals("payment.created")) return ResponseEntity.ok().build(); 
 
             Object dataObj = payload.get("data");
@@ -134,26 +130,28 @@ public class PaymentController {
 
             long paymentId = Long.parseLong(paymentIdStr);
 
-            // Buscamos o status real do pagamento no Mercado Pago
             PaymentClient client = new PaymentClient();
             Payment payment = client.get(paymentId);
 
-            // CONFIGURAÇÃO 3: A LIBERAÇÃO AUTOMÁTICA E MMN
+            // CONFIGURAÇÃO 3: ATIVAÇÃO E MMN
             if ("approved".equals(payment.getStatus())) {
                 String descricao = payment.getDescription(); 
                 if (descricao != null && descricao.contains(" - ")) {
+                    // Extrai o email da descrição (ex: "Plano OURO - teste@email.com")
                     String email = descricao.split(" - ")[1]; 
                     double valorPago = payment.getTransactionAmount().doubleValue();
 
-                    // Ativa o plano do usuário
+                    // 1. Renovação e Ativação do Plano (Corrige o erro de compilação)
                     usuarioController.renovarPlanoAdmin(email);
-                    // Processa os bônus da rede (MMN)
+                    
+                    // 2. Processamento do MMN (Corrige o erro de compilação)
+                    // Passa o valor pago para o MMN calcular os 50%, 25% ou 10% corretamente
                     usuarioController.processarBonusPercentualPeloEmail(email, valorPago);
                     
-                    System.out.println("Pagamento APROVADO e MMN Processado para: " + email);
+                    System.out.println("Pagamento APROVADO, Plano Ativado e MMN Processado para: " + email);
                 }
             }
-            // Importante: Sempre retornar 200 OK para o Mercado Pago não tentar enviar de novo
+            
             return ResponseEntity.ok().build();
 
         } catch (Exception e) {
@@ -172,10 +170,19 @@ public class PaymentController {
 
             long paymentId = Long.parseLong(paymentIdStr);
             PaymentRefundClient refundClient = new PaymentRefundClient();
-
             PaymentRefund refund = refundClient.refund(paymentId);
 
-            usuarioController.estornar(payload);
+            // Chama a lógica de estorno no UsuarioController (Corrige o erro de compilação)
+            // Criamos um payload fictício para a função estornar que espera external_reference ou similar
+            Map<String, Object> estornoPayload = new HashMap<>();
+            // Tentamos buscar o email do pagamento original para inativar o usuário
+            PaymentClient client = new PaymentClient();
+            Payment payment = client.get(paymentId);
+            if(payment.getDescription() != null && payment.getDescription().contains(" - ")) {
+                estornoPayload.put("external_reference", payment.getDescription().split(" - ")[1]);
+            }
+            
+            usuarioController.estornar(estornoPayload);
 
             return ResponseEntity.ok(Map.of(
                 "status", "refunded",

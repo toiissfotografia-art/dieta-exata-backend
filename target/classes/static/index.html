@@ -4,55 +4,160 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DIETA EXATA | O Futuro da Nutrição</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <script src="config.js"></script>
 
     <style>
-        :root { --neon: #00f2ff; --gold: #ffac00; --bg: #050505; --card: #0d0d0d; }
-        body, html { margin: 0; padding: 0; background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; height: 100%; overflow-x: hidden; }
+        :root { 
+            --neon: #00f2ff; 
+            --gold: #ffac00; 
+            --bg: #050505; 
+            --card: #0d0d0d; 
+            --text-dim: #888;
+        }
+        
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            height: 100%; 
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
 
         /* Background Animado */
-        .bg-glow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, #003a40 0%, #050505 70%); z-index: -1; opacity: 0.5; }
+        .bg-glow { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: radial-gradient(circle at 50% 50%, #001a1d 0%, #050505 80%); 
+            z-index: -1; 
+            opacity: 0.6; 
+        }
 
         .main-container { display: flex; min-height: 100vh; flex-wrap: wrap; }
 
         /* LADO ESQUERDO: LOGIN / CADASTRO */
-        .auth-section { flex: 1; min-width: 350px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.8); border-right: 1px solid rgba(0, 242, 255, 0.2); padding: 40px; }
+        .auth-section { 
+            flex: 1; 
+            min-width: 350px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            background: rgba(0, 0, 0, 0.9); 
+            border-right: 1px solid rgba(255, 255, 255, 0.05); 
+            padding: 40px; 
+            box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+        }
         
-        .logo-container { text-align: center; margin-bottom: 40px; }
-        .logo-text { font-family: 'Orbitron'; font-size: 32px; font-weight: 700; color: var(--neon); text-shadow: 0 0 15px var(--neon); letter-spacing: 2px; }
-        .logo-sub { font-size: 12px; letter-spacing: 5px; color: #888; text-transform: uppercase; }
+        .logo-container { text-align: center; margin-bottom: 50px; }
+        .logo-text { 
+            font-size: 28px; 
+            font-weight: 800; 
+            color: var(--neon); 
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+        .logo-sub { 
+            font-size: 10px; 
+            letter-spacing: 4px; 
+            color: var(--text-dim); 
+            text-transform: uppercase; 
+            margin-top: 5px;
+            font-weight: 600;
+        }
 
-        .auth-box { width: 100%; max-width: 320px; }
-        .btn-auth { width: 100%; padding: 16px; margin: 10px 0; font-family: 'Orbitron'; font-weight: bold; border: 1px solid var(--neon); cursor: pointer; transition: 0.4s; text-decoration: none; display: block; text-align: center; box-sizing: border-box; }
-        .btn-login { background: var(--neon); color: black; }
-        .btn-cadastro { background: transparent; color: var(--neon); }
-        .btn-auth:hover { box-shadow: 0 0 20px var(--neon); transform: translateY(-3px); background: white; color: black; border-color: white; }
+        .auth-box { width: 100%; max-width: 300px; }
+        .btn-auth { 
+            width: 100%; 
+            padding: 18px; 
+            margin: 12px 0; 
+            font-weight: 700; 
+            font-size: 13px;
+            border-radius: 12px;
+            cursor: pointer; 
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            text-decoration: none; 
+            display: block; 
+            text-align: center; 
+            box-sizing: border-box; 
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .btn-login { 
+            background: var(--neon); 
+            color: black; 
+            border: none;
+        }
+        
+        .btn-cadastro { 
+            background: transparent; 
+            color: white; 
+            border: 1px solid #333;
+        }
+        
+        .btn-auth:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 10px 20px rgba(0, 242, 255, 0.2);
+        }
+        
+        .btn-cadastro:hover {
+            border-color: var(--neon);
+            color: var(--neon);
+        }
 
         /* LADO DIREITO: CONTEÚDO E PLANOS */
-        .info-section { flex: 1.5; min-width: 500px; padding: 60px; overflow-y: auto; }
-        .headline { font-family: 'Orbitron'; font-size: 42px; color: white; line-height: 1.1; margin-bottom: 20px; }
+        .info-section { flex: 1.5; min-width: 500px; padding: 80px; overflow-y: auto; }
+        .headline { font-size: 48px; font-weight: 800; color: white; line-height: 1; margin-bottom: 25px; letter-spacing: -0.03em; }
         .headline span { color: var(--neon); }
-        .description { font-size: 18px; color: #ccc; margin-bottom: 40px; line-height: 1.6; }
+        .description { font-size: 18px; color: #999; margin-bottom: 50px; line-height: 1.6; max-width: 600px; }
 
         /* GRID DE PLANOS */
         .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 50px; }
-        .plan-card { background: var(--card); border: 1px solid #222; padding: 25px; border-radius: 5px; transition: 0.3s; position: relative; overflow: hidden; }
-        .plan-card:hover { border-color: var(--neon); transform: scale(1.05); }
-        .plan-card h3 { font-family: 'Orbitron'; margin: 0; font-size: 18px; }
-        .plan-card .price { font-size: 28px; font-weight: 700; margin: 15px 0; color: var(--neon); }
-        .plan-card ul { padding: 0; list-style: none; font-size: 14px; color: #aaa; }
-        .plan-card ul li { margin-bottom: 8px; }
+        .plan-card { 
+            background: var(--card); 
+            border: 1px solid #1a1a1a; 
+            padding: 30px; 
+            border-radius: 20px; 
+            transition: 0.3s; 
+            position: relative; 
+        }
+        .plan-card:hover { border-color: var(--neon); transform: translateY(-5px); background: #111; }
+        .plan-card h3 { margin: 0; font-size: 14px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; }
+        .plan-card .price { font-size: 32px; font-weight: 800; margin: 15px 0; color: white; }
+        .plan-card ul { padding: 0; list-style: none; font-size: 13px; color: #666; font-weight: 500; }
+        .plan-card ul li { margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .plan-card ul li::before { content: "•"; color: var(--neon); font-weight: bold; }
 
         /* DESTAQUE PREMIAÇÃO */
-        .award-banner { background: linear-gradient(90deg, #000, #111); border-left: 4px solid var(--gold); padding: 25px; margin-top: 40px; display: flex; align-items: center; gap: 20px; }
+        .award-banner { 
+            background: rgba(255, 172, 0, 0.05); 
+            border: 1px solid rgba(255, 172, 0, 0.2); 
+            padding: 30px; 
+            border-radius: 20px;
+            margin-top: 40px; 
+            display: flex; 
+            align-items: center; 
+            gap: 25px; 
+        }
         .award-icon { font-size: 40px; }
-        .award-text h4 { margin: 0; font-family: 'Orbitron'; color: var(--gold); }
-        .award-text p { margin: 5px 0 0; color: #888; font-size: 14px; }
+        .award-text h4 { margin: 0; font-weight: 800; color: var(--gold); text-transform: uppercase; font-size: 14px; letter-spacing: 0.05em; }
+        .award-text p { margin: 8px 0 0; color: #888; font-size: 14px; line-height: 1.5; }
 
-        @media (max-width: 768px) { .main-container { flex-direction: column; } .auth-section { min-height: 400px; } .info-section { padding: 30px; min-width: 100%; } }
+        @media (max-width: 768px) { 
+            .main-container { flex-direction: column; } 
+            .auth-section { min-height: 400px; padding: 40px 20px; } 
+            .info-section { padding: 40px 20px; min-width: 100%; } 
+            .headline { font-size: 32px; }
+        }
     </style>
 </head>
 <body>
@@ -63,20 +168,20 @@
         <section class="auth-section">
             <div class="logo-container">
                 <div class="logo-text">DIETA EXATA</div>
-                <div class="logo-sub">Protocolo v4.0</div>
+                <div class="logo-sub">Protocolo I.A. v4.0</div>
             </div>
 
             <div class="auth-box">
                 <a href="login.html" class="btn-auth btn-login">ACESSAR TERMINAL</a>
                 <a href="cadastro.html" class="btn-auth btn-cadastro">TENHO UM CONVITE</a>
-                <p style="text-align: center; font-size: 12px; color: #444; margin-top: 20px;">ACESSO RESTRITO A MEMBROS DA REDE</p>
+                <p style="text-align: center; font-size: 11px; color: #444; margin-top: 25px; font-weight: 700; letter-spacing: 0.05em;">ACESSO RESTRITO A MEMBROS DA REDE</p>
             </div>
         </section>
 
         <section class="info-section">
             <h1 class="headline">REPROGRAME SEU <span>CORPO.</span><br>ALAVANQUE SEUS <span>GANHOS.</span></h1>
             <p class="description">
-                A união definitiva entre nutrição de precisão por I.A. e o sistema de rede MMN mais lucrativo do mercado. 
+                A união definitiva entre nutrição de precisão por I.A. e o sistema de rede multinível mais lucrativo do mercado. 
                 Sua saúde se torna seu maior ativo financeiro.
             </p>
 
@@ -85,28 +190,28 @@
                     <h3>BRONZE</h3>
                     <div class="price">R$ 19,99</div>
                     <ul>
-                        <li>✓ Dieta Básica I.A.</li>
-                        <li>✓ 1 Nível de Indicação</li>
-                        <li>✓ Bônus Direto Ativo</li>
+                        <li>Dieta Básica I.A.</li>
+                        <li>1 Nível de Indicação</li>
+                        <li>Bônus Direto Ativo</li>
                     </ul>
                 </div>
-                <div class="plan-card" style="border-color: #555;">
+                <div class="plan-card">
                     <h3>PRATA</h3>
                     <div class="price">R$ 49,99</div>
                     <ul>
-                        <li>✓ Dieta Personalizada</li>
-                        <li>✓ 2 Níveis de Indicação</li>
-                        <li>✓ Ganhos Alavancados</li>
+                        <li>Dieta Personalizada</li>
+                        <li>2 Níveis de Indicação</li>
+                        <li>Ganhos Alavancados</li>
                     </ul>
                 </div>
-                <div class="plan-card" style="border-color: var(--gold);">
-                    <div style="position:absolute; top:5px; right:5px; background:var(--gold); color:black; font-size:10px; padding:2px 5px; font-weight:bold;">VIP</div>
+                <div class="plan-card" style="border-color: rgba(255, 172, 0, 0.4);">
+                    <div style="position:absolute; top:15px; right:20px; background:var(--gold); color:black; font-size:9px; padding:3px 8px; font-weight:900; border-radius:4px;">VIP</div>
                     <h3 style="color: var(--gold);">OURO</h3>
                     <div class="price" style="color: var(--gold);">R$ 79,99</div>
                     <ul>
-                        <li>✓ Protocolo Full I.A.</li>
-                        <li>✓ Níveis Ilimitados</li>
-                        <li>✓ Participação nos Lucros</li>
+                        <li>Protocolo Full I.A.</li>
+                        <li>Rede Multinível Completa</li>
+                        <li>Participação nos Lucros</li>
                     </ul>
                 </div>
             </div>
@@ -114,29 +219,26 @@
             <div class="award-banner">
                 <div class="award-icon">🏆</div>
                 <div class="award-text">
-                    <h4>PROGRAMA DE ELITE: RANKING GLOBAL</h4>
-                    <p>O mestre com maior número de indicações diretas no mês desbloqueia premiações exclusivas em tecnologia e acesso a eventos VIP.</p>
+                    <h4>RANKING GLOBAL DE ELITE</h4>
+                    <p>O mestre com maior número de indicações diretas no mês desbloqueia premiações exclusivas em tecnologia e acesso a eventos VIP de Biohacking.</p>
                 </div>
             </div>
 
-            <div style="margin-top: 40px; color: #555; font-size: 12px; font-family: 'Orbitron';">
-                ESTADO DO SISTEMA: <span style="color: #0f0;">ONLINE</span> | MEMBROS ATIVOS: <span id="count">...</span>
+            <div style="margin-top: 50px; color: #444; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;">
+                ESTADO DO SISTEMA: <span style="color: var(--green);">ONLINE</span> | MEMBROS ATIVOS: <span id="count" style="color: white;">...</span>
             </div>
         </section>
     </div>
 
     <script>
-        // --- INCLUSÃO: FUNÇÃO PARA BUSCAR O NÚMERO REAL VIA PONTE PHP ---
+        // Função para buscar o número real de membros via ponte PHP
         async function atualizarContadorReal() {
             try {
-                // Alterado para passar pela api_bridge.php e evitar erro de CORS
                 const res = await fetch('api_bridge.php?path=api/usuarios/todos');
                 if (res.ok) {
                     const users = await res.json();
-                    // Atualiza o contador com o número real de registros no banco do Render
                     document.getElementById('count').innerText = users.length.toLocaleString('pt-BR');
                 } else {
-                    // Valor de fallback caso a API demore a responder
                     document.getElementById('count').innerText = "14.282";
                 }
             } catch (err) {
@@ -147,10 +249,9 @@
 
         window.onload = () => {
             atualizarContadorReal();
-            // Atualiza o contador a cada 60 segundos para manter o senso de rede viva
+            // Atualiza a cada 60 segundos
             setInterval(atualizarContadorReal, 60000); 
         };
-        // --- FIM DA INCLUSÃO ---
     </script>
 </body>
 </html>

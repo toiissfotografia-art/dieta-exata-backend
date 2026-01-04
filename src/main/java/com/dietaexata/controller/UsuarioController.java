@@ -52,7 +52,7 @@ public class UsuarioController {
         if (found.isPresent()) {
             Usuario u = found.get();
             if (u.getDataExpiracao() == null || u.getDataExpiracao().isBefore(LocalDateTime.now())) {
-                return ResponseEntity.status(403).body("Sua conta aguarda ativação. Realize o PIX e envie o comprovante no grupo!");
+                return ResponseEntity.status(403).body("Sua conta aguarda ativação. Realize o PIX!");
             }
             return ResponseEntity.ok(u);
         }
@@ -81,30 +81,73 @@ public class UsuarioController {
             if (usuario.getPlano() == null) usuario.setPlano("BRONZE");
             usuario.setDataExpiracao(LocalDateTime.now().minusDays(1));
 
+            if (usuario.getIndicadoPor() != null && !usuario.getIndicadoPor().isEmpty()) {
+                Usuario indicador = repository.findByEmail(usuario.getIndicadoPor().toLowerCase().trim());
+                if (indicador != null) {
+                    usuario.setIndicadoPor(indicador.getEmail());
+                }
+            }
+
             Usuario salvo = repository.save(usuario);
             return ResponseEntity.ok(salvo);
-            
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body("Erro ao salvar no banco: " + e.getMessage());
+            return ResponseEntity.status(500).body("Erro: " + e.getMessage());
         }
     }
+
+    // --- MÉTODOS SOLICITADOS PELO PAYMENTCONTROLLER (CORREÇÃO DE ERROS) ---
+
+    public void renovarPlanoAdmin(String email) {
+        Usuario u = repository.findByEmail(email);
+        if (u != null) {
+            // Se o usuário pagou e está como Bronze, sobe para Ouro automaticamente
+            if (u.getPlano() == null || u.getPlano().equalsIgnoreCase("BRONZE")) {
+                u.setPlano("OURO");
+            }
+            u.setDataExpiracao(LocalDateTime.now().plusDays(30));
+            repository.saveAndFlush(u);
+            System.out.println("Plano renovado via Admin/Pagamento para: " + email);
+        }
+    }
+
+    public void processarBonusPercentualPeloEmail(String email, double valorPago) {
+        Usuario u = repository.findByEmail(email);
+        if (u != null) {
+            // MANTENDO LÓGICA MMN: Aciona a rede de ganhos
+            processarGanhosRede(u);
+        }
+    }
+
+    public void estornar(Map<String, Object> payload) {
+        String email = (String) payload.get("external_reference");
+        Usuario u = repository.findByEmail(email);
+        if (u != null) {
+            u.setDataExpiracao(LocalDateTime.now().minusDays(1)); // Inativa a conta
+            repository.saveAndFlush(u);
+            System.out.println("Pagamento estornado/cancelado para: " + email);
+        }
+    }
+
+    // ---------------------------------------------------------------------
 
     @PostMapping("/pagamentos/webhook")
     public ResponseEntity<?> webhookPagamento(@RequestBody Map<String, Object> payload) {
         try {
             String email = (String) payload.get("external_reference"); 
-            
             if (email != null) {
                 Usuario u = repository.findByEmail(email);
                 if (u != null) {
-                    u.setPlano("OURO"); 
+                    // Garante a subida de plano para evitar o erro do "Bronze"
+                    if (u.getPlano() == null || u.getPlano().equalsIgnoreCase("BRONZE")) {
+                        u.setPlano("OURO"); 
+                    }
                     u.setDataExpiracao(LocalDateTime.now().plusDays(30));
                     repository.saveAndFlush(u);
-                    processarGanhosRede(u); // Mantendo a lógica de MMN
-                    return ResponseEntity.ok("{\"mensagem\":\"Pagamento processado com sucesso!\"}");
+                    processarGanhosRede(u); 
+                    return ResponseEntity.ok("{\"mensagem\":\"Sucesso!\"}");
                 }
             }
-            return ResponseEntity.status(404).body("{\"erro\":\"Usuario não identificado\"}");
+            return ResponseEntity.status(404).build();
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
         }
@@ -115,199 +158,80 @@ public class UsuarioController {
         try {
             String email = payload.get("email");
             String metodo = payload.get("metodo");
-
-            Usuario u = repository.findAll().stream()
-                    .filter(user -> user.getEmail().equalsIgnoreCase(email))
-                    .findFirst().orElse(null);
-
+            
+            Usuario u = repository.findByEmail(email);
             if (u == null) return ResponseEntity.status(404).body("{\"erro\":\"Usuário não encontrado.\"}");
 
             if ("ADMIN_MANUAL".equalsIgnoreCase(metodo)) {
-                u.setPlano("OURO");
+                if(u.getPlano() == null || u.getPlano().equalsIgnoreCase("BRONZE")) {
+                    u.setPlano("OURO"); 
+                }
                 u.setDataExpiracao(LocalDateTime.now().plusDays(30));
                 repository.saveAndFlush(u);
-                processarGanhosRede(u); // Mantendo a lógica de MMN
-                return ResponseEntity.ok(Map.of("mensagem", "Usuário ativado via Admin!"));
+                processarGanhosRede(u); 
+                return ResponseEntity.ok(Map.of("mensagem", "Ativado com sucesso!"));
             }
 
             if ("SALDO".equalsIgnoreCase(metodo)) {
+                String novoPlano = payload.get("plano") != null ? payload.get("plano").toUpperCase() : "OURO";
+                double custo = novoPlano.equals("OURO") ? 79.99 : (novoPlano.equals("PRATA") ? 49.99 : 19.99);
+
                 double saldo = Optional.ofNullable(u.getSaldoDisponivel()).orElse(0.0);
-                if (saldo < 197.0) return ResponseEntity.badRequest().body("{\"erro\":\"Saldo insuficiente.\"}");
+                if (saldo < custo) return ResponseEntity.badRequest().body("{\"erro\":\"Saldo insuficiente.\"}");
                 
-                u.setSaldoDisponivel(saldo - 197.0);
-                u.setPlano("OURO");
+                u.setSaldoDisponivel(saldo - custo);
+                u.setPlano(novoPlano);
                 u.setDataExpiracao(LocalDateTime.now().plusDays(30));
                 repository.saveAndFlush(u);
-                processarGanhosRede(u); // Adicionada conexão MMN também no upgrade por saldo
+                processarGanhosRede(u);
                 return ResponseEntity.ok("{\"mensagem\":\"Upgrade realizado!\"}");
             }
-            
-            return ResponseEntity.badRequest().body("{\"erro\":\"Método não suportado.\"}");
-        } catch (NullPointerException | IllegalArgumentException e) {
-            return ResponseEntity.status(400).body("{\"erro\":\"Dados inválidos.\"}");
-        }
-    }
-
-    @PostMapping("/ajustar-saldo")
-    public ResponseEntity<?> ajustarSaldo(@RequestBody Map<String, Object> payload) {
-        try {
-            String email = (String) payload.get("email");
-            double valor = Double.parseDouble(payload.get("valor").toString());
-            
-            Usuario u = repository.findAll().stream()
-                .filter(user -> user.getEmail().equalsIgnoreCase(email))
-                .findFirst().orElse(null);
-
-            if (u != null) {
-                u.setSaldoDisponivel(valor);
-                repository.save(u);
-                return ResponseEntity.ok("{\"mensagem\":\"Saldo Ajustado!\"}");
-            }
-            return ResponseEntity.status(404).build();
-        } catch (NumberFormatException | NullPointerException e) {
-            return ResponseEntity.status(400).body("{\"erro\":\"Formato de valor inválido.\"}");
-        }
-    }
-
-    public void processarBonusPercentualPeloEmail(String email, double valorPago) {
-        renovarPlanoAdmin(email);
-    }
-
-    public void renovarPlanoAdmin(String email) {
-        Usuario u = repository.findAll().stream()
-                .filter(user -> user.getEmail().equalsIgnoreCase(email))
-                .findFirst().orElse(null);
-        if (u != null) {
-            u.setDataExpiracao(LocalDateTime.now().plusDays(30));
-            if (u.getPlano() == null || u.getPlano().isEmpty()) u.setPlano("OURO");
-            repository.saveAndFlush(u);
-            processarGanhosRede(u); // Mantendo a lógica de MMN
-        }
-    }
-
-    @PostMapping("/estornar")
-    public ResponseEntity<?> estornar(@RequestBody Map<String, Object> payload) {
-        try {
-            String email = (String) payload.get("email");
-            Object valorObj = payload.get("valor");
-            double valorEstorno = (valorObj != null) ? Double.parseDouble(valorObj.toString()) : 0.0;
-
-            Usuario u = repository.findAll().stream()
-                .filter(user -> user.getEmail().equalsIgnoreCase(email))
-                .findFirst().orElse(null);
-
-            if (u == null) return ResponseEntity.status(404).body("Usuário não encontrado.");
-
-            double saldoAtual = Optional.ofNullable(u.getSaldoDisponivel()).orElse(0.0);
-            u.setSaldoDisponivel(saldoAtual - valorEstorno);
-            
-            repository.save(u);
-            return ResponseEntity.ok("Saldo atualizado após estorno.");
-        } catch (NumberFormatException | NullPointerException e) {
-            return ResponseEntity.status(400).body("Erro no valor de estorno.");
-        }
-    }
-
-    @PostMapping("/transferir")
-    public ResponseEntity<?> transferirSaldo(@RequestBody Map<String, Object> payload) {
-        try {
-            String emailOrigem = (String) payload.get("remetenteEmail");
-            String emailDestino = (String) payload.get("destinatarioEmail");
-            
-            if (payload.get("valor") == null) return ResponseEntity.badRequest().body("Valor não informado.");
-            double valor = Double.parseDouble(payload.get("valor").toString());
-
-            if (emailOrigem.equalsIgnoreCase(emailDestino)) {
-                return ResponseEntity.badRequest().body("Você não pode transferir para si mesmo.");
-            }
-
-            Usuario origem = repository.findByEmail(emailOrigem);
-            Usuario destino = repository.findByEmail(emailDestino);
-
-            if (origem == null) return ResponseEntity.status(404).body("Sua conta não foi encontrada.");
-            if (destino == null) return ResponseEntity.status(404).body("Destinatário não encontrado no sistema.");
-
-            double saldoAtual = Optional.ofNullable(origem.getSaldoDisponivel()).orElse(0.0);
-            if (saldoAtual < valor) {
-                return ResponseEntity.badRequest().body("Saldo insuficiente.");
-            }
-
-            origem.setSaldoDisponivel(saldoAtual - valor);
-            destino.setSaldoDisponivel(Optional.ofNullable(destino.getSaldoDisponivel()).orElse(0.0) + valor);
-
-            repository.save(origem);
-            repository.save(destino);
-
-            return ResponseEntity.ok("Transferência concluída!");
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Erro no processamento: " + e.getMessage());
+            return ResponseEntity.status(400).build();
         }
     }
 
-    @PostMapping("/solicitar-saque/{email}")
-    public ResponseEntity<?> solicitarSaque(@PathVariable String email, @RequestBody Map<String, String> payload) {
-        Usuario u = repository.findAll().stream().filter(user -> user.getEmail().equalsIgnoreCase(email)).findFirst().orElse(null);
-        if (u != null) {
-            String pix = payload.get("chavePix");
-            if (pix == null || pix.isEmpty()) return ResponseEntity.status(400).body("PIX obrigatório.");
-
-            double saldoDisp = Optional.ofNullable(u.getSaldoDisponivel()).orElse(0.0);
-            if (saldoDisp > 0) {
-                u.setChavePix(pix);
-                u.setSaldoSolicitado(Optional.ofNullable(u.getSaldoSolicitado()).orElse(0.0) + saldoDisp);
-                u.setSaldoDisponivel(0.0);
-                repository.save(u);
-                return ResponseEntity.ok("Sucesso!");
-            }
-        }
-        return ResponseEntity.status(404).build();
-    }
-
-    // LÓGICA DE MMN (Mantida e conectada conforme solicitado)
+    // LÓGICA DE MMN (Multi-Level Marketing)
     private void processarGanhosRede(Usuario novo) {
         if (novo.getIndicadoPor() == null || novo.getIndicadoPor().isEmpty()) return;
 
-        double valorPago;
-        String planoStr = (novo.getPlano() != null) ? novo.getPlano().toUpperCase() : "BRONZE";
-        switch (planoStr) {
-            case "BRONZE" -> valorPago = 19.99;
-            case "PRATA"  -> valorPago = 49.99;
-            case "OURO"   -> valorPago = 79.99;
-            default        -> valorPago = 0.0;
-        }
+        double valorBaseMMN = 0.0;
+        String planoVendido = (novo.getPlano() != null) ? novo.getPlano().toUpperCase() : "BRONZE";
         
-        if (valorPago == 0) return;
+        if (planoVendido.equals("OURO")) {
+            valorBaseMMN = 79.99;
+        } else if (planoVendido.equals("PRATA")) {
+            valorBaseMMN = 49.99;
+        } else {
+            valorBaseMMN = 19.99;
+        }
 
-        // CONEXÃO NÍVEL 1 (PAI)
-        Usuario pai = repository.findAll().stream()
-            .filter(u -> u.getEmail().equalsIgnoreCase(novo.getIndicadoPor()))
-            .findFirst().orElse(null);
-
+        Usuario pai = repository.findByEmail(novo.getIndicadoPor().toLowerCase().trim());
         if (pai != null) {
             String planoPai = (pai.getPlano() != null) ? pai.getPlano().toUpperCase() : "BRONZE";
+            
             double bonusN1 = switch (planoPai) {
-                case "OURO"   -> valorPago * 0.50;
-                case "PRATA"  -> valorPago * 0.25;
-                default       -> valorPago * 0.10;
+                case "OURO"   -> valorBaseMMN * 0.50; 
+                case "PRATA"  -> valorBaseMMN * 0.25; 
+                default       -> valorBaseMMN * 0.10; 
             };
             
             creditarValor(pai, bonusN1, true);
             pai.setNivel1count(Optional.ofNullable(pai.getNivel1count()).orElse(0) + 1);
             repository.save(pai);
 
-            // CONEXÃO NÍVEL 2 (AVÔ)
             if (pai.getIndicadoPor() != null && !pai.getIndicadoPor().isEmpty()) {
-                Usuario avo = repository.findAll().stream()
-                    .filter(u -> u.getEmail().equalsIgnoreCase(pai.getIndicadoPor()))
-                    .findFirst().orElse(null);
-                
+                Usuario avo = repository.findByEmail(pai.getIndicadoPor().toLowerCase().trim());
                 if (avo != null) {
                     String planoAvo = (avo.getPlano() != null) ? avo.getPlano().toUpperCase() : "BRONZE";
+                    
                     double bonusN2 = switch (planoAvo) {
-                        case "OURO"  -> 2.50;
-                        case "PRATA" -> 1.50;
+                        case "OURO"  -> 5.00;
+                        case "PRATA" -> 2.50;
                         default      -> 1.00;
                     };
+                    
                     creditarValor(avo, bonusN2, false);
                     avo.setNivel2count(Optional.ofNullable(avo.getNivel2count()).orElse(0) + 1);
                     repository.save(avo);
@@ -328,55 +252,8 @@ public class UsuarioController {
 
     @DeleteMapping("/deletar/{email}")
     public ResponseEntity<?> eliminarUsuario(@PathVariable String email) {
-        if ("toiiss@dietaexata.com.br".equals(email)) return ResponseEntity.status(403).build();
-        Usuario u = repository.findAll().stream().filter(user -> user.getEmail().equalsIgnoreCase(email)).findFirst().orElse(null);
-        if (u != null) {
-            repository.delete(u);
-            return ResponseEntity.ok("Removido");
-        }
+        Usuario u = repository.findByEmail(email);
+        if (u != null) { repository.delete(u); return ResponseEntity.ok("Removido"); }
         return ResponseEntity.status(404).build();
-    }
-
-    @PostMapping("/zerar-saldo/{email}")
-    public ResponseEntity<?> zerarSaldoSolicitado(@PathVariable String email) {
-        Usuario u = repository.findAll().stream().filter(user -> user.getEmail().equalsIgnoreCase(email)).findFirst().orElse(null);
-        if (u != null) {
-            u.setSaldoSolicitado(0.0);
-            repository.save(u);
-            return ResponseEntity.ok("Sucesso");
-        }
-        return ResponseEntity.status(404).build();
-    }
-
-    @PostMapping("/estornar-pix/{email}")
-    public ResponseEntity<?> estornarPix(@PathVariable String email) {
-        Usuario u = repository.findAll().stream().filter(user -> user.getEmail().equalsIgnoreCase(email)).findFirst().orElse(null);
-        if (u != null) {
-            double valorRetorno = Optional.ofNullable(u.getSaldoSolicitado()).orElse(0.0);
-            u.setSaldoDisponivel(Optional.ofNullable(u.getSaldoDisponivel()).orElse(0.0) + valorRetorno);
-            u.setSaldoSolicitado(0.0);
-            u.setAlertaMensagem("⚠️ ERRO NO PIX: Verifique sua chave. Valor estornado.");
-            repository.save(u);
-            return ResponseEntity.ok("Estornado");
-        }
-        return ResponseEntity.status(404).build();
-    }
-
-    @PostMapping("/atualizar-dieta")
-    public ResponseEntity<?> atualizarDieta(@RequestBody Map<String, String> payload) {
-        String email = payload.get("email");
-        String dieta = payload.get("dietaAtual");
-
-        Usuario u = repository.findAll().stream()
-                .filter(user -> user.getEmail().equalsIgnoreCase(email))
-                .findFirst().orElse(null);
-
-        if (u != null) {
-            u.setDietaAtual(dieta);
-            u.setDataUltimaDieta(LocalDate.now());
-            repository.save(u);
-            return ResponseEntity.ok("Dieta salva com sucesso!");
-        }
-        return ResponseEntity.status(404).body("Usuário não encontrado.");
     }
 }

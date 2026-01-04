@@ -4,67 +4,220 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FINANCEIRO | DIETA EXATA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00f2ff; --bg: #050505; --card: #0d0d0d; --green: #2ecc71; --gold: #ffac00; }
-        body { background: var(--bg); color: white; font-family: 'Rajdhani'; margin: 0; display: flex; min-height: 100vh; }
-        .sidebar { width: 250px; background: #000; border-right: 1px solid #222; padding: 30px 20px; display: flex; flex-direction: column; gap: 10px; }
-        .nav-link { color: #888; text-decoration: none; padding: 12px; border-radius: 5px; font-family: 'Orbitron'; font-size: 11px; }
-        .nav-link.active { background: #111; color: white; border-left: 3px solid var(--neon); }
-        .main { flex: 1; padding: 40px; }
-        h1 { font-family: 'Orbitron'; color: var(--neon); font-size: 22px; }
+        :root { 
+            --neon: #00f2ff; 
+            --bg: #050505; 
+            --card: #0d0d0d; 
+            --green: #2ecc71; 
+            --gold: #ffac00; 
+            --text-dim: #888;
+        }
 
-        .finance-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-        .fin-card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #222; text-align: center; }
-        .fin-card h4 { margin: 0; color: #888; font-size: 12px; }
-        .fin-card .value { font-family: 'Orbitron'; font-size: 24px; margin: 10px 0; }
+        body { 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            min-height: 100vh; 
+            -webkit-font-smoothing: antialiased;
+        }
 
-        .history-box { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #222; }
-        .history-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #1a1a1a; font-size: 14px; }
-        .type-bonus { color: var(--green); font-weight: bold; }
+        /* Sidebar */
+        .sidebar { 
+            width: 260px; 
+            background: #000; 
+            border-right: 1px solid #1a1a1a; 
+            padding: 40px 24px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+        }
+
+        .logo { 
+            font-weight: 800; 
+            color: var(--neon); 
+            font-size: 18px; 
+            text-align: center; 
+            margin-bottom: 40px; 
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .nav-link { 
+            color: var(--text-dim); 
+            text-decoration: none; 
+            padding: 14px 18px; 
+            border-radius: 12px; 
+            transition: 0.3s; 
+            font-size: 13px; 
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active { 
+            background: #111; 
+            color: white; 
+            box-shadow: inset 4px 0 0 var(--neon);
+        }
+
+        /* Main Content */
+        .main { flex: 1; padding: 40px; background: #080808; overflow-y: auto; }
+        
+        h1 { 
+            font-size: 24px; 
+            font-weight: 700; 
+            color: var(--neon); 
+            margin-bottom: 30px; 
+            letter-spacing: -0.02em;
+        }
+
+        /* Finance Cards */
+        .finance-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 40px; 
+        }
+
+        .fin-card { 
+            background: var(--card); 
+            padding: 30px; 
+            border-radius: 20px; 
+            border: 1px solid #1a1a1a; 
+            text-align: left; 
+            transition: 0.3s;
+        }
+
+        .fin-card h4 { 
+            margin: 0; 
+            color: var(--text-dim); 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+            font-weight: 700;
+        }
+
+        .fin-card .value { 
+            font-size: 32px; 
+            font-weight: 700; 
+            margin: 15px 0 0 0; 
+        }
+
+        /* History Section */
+        .history-box { 
+            background: var(--card); 
+            padding: 30px; 
+            border-radius: 20px; 
+            border: 1px solid #1a1a1a; 
+        }
+
+        .history-box h3 { 
+            font-size: 14px; 
+            font-weight: 700; 
+            margin-bottom: 25px; 
+            text-transform: uppercase; 
+            color: #fff;
+        }
+
+        .history-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            padding: 18px 0; 
+            border-bottom: 1px solid #1a1a1a; 
+            font-size: 14px; 
+        }
+
+        .history-item:last-child { border-bottom: none; }
+
+        .type-bonus { color: var(--green); font-weight: 700; }
+        .meta-text { color: #555; font-size: 12px; margin-top: 5px; }
+
+        @media (max-width: 768px) { 
+            body { flex-direction: column; } 
+            .sidebar { width: 100%; padding: 20px; border-right: none; border-bottom: 1px solid #1a1a1a; }
+            .main { padding: 20px; }
+        }
     </style>
 </head>
 <body>
     <aside class="sidebar">
-        <div class="logo" style="font-family:'Orbitron'; color:var(--neon); margin-bottom:30px; text-align:center;">DIETA EXATA</div>
+        <div class="logo">DIETA EXATA</div>
         <a href="dashboard.html" class="nav-link">DASHBOARD</a>
         <a href="rede.html" class="nav-link">MINHA REDE</a>
         <a href="financeiro.html" class="nav-link active">FINANCEIRO</a>
-        <a href="dashboard.html" class="nav-link">VOLTAR</a>
+        <a href="dashboard.html" class="nav-link" style="margin-top: 20px; color: #555;">← VOLTAR</a>
     </aside>
 
     <main class="main">
         <h1>EXTRATO FINANCEIRO</h1>
         
         <div class="finance-grid">
-            <div class="fin-card"><h4>Saldo Atual</h4><div class="value" id="cur-balance" style="color:var(--green)">R$ 0,00</div></div>
-            <div class="fin-card"><h4>Indicações Diretas</h4><div class="value" id="dir-earn" style="color:var(--neon)">R$ 0,00</div></div>
-            <div class="fin-card"><h4>Bônus de Equipe</h4><div class="value" id="ind-earn" style="color:var(--gold)">R$ 0,00</div></div>
+            <div class="fin-card">
+                <h4>Saldo Atual</h4>
+                <div class="value" id="cur-balance" style="color:var(--green)">R$ 0,00</div>
+            </div>
+            
+            <div class="fin-card">
+                <h4>Indicações Diretas</h4>
+                <div class="value" id="dir-earn" style="color:var(--neon)">R$ 0,00</div>
+            </div>
+            
+            <div class="fin-card">
+                <h4>Bônus de Equipe</h4>
+                <div class="value" id="ind-earn" style="color:var(--gold)">R$ 0,00</div>
+            </div>
         </div>
 
         <div class="history-box">
-            <h3 style="font-family:'Orbitron'; font-size:14px; margin-bottom:20px;">ÚLTIMAS MOVIMENTAÇÕES</h3>
+            <h3>ÚLTIMAS MOVIMENTAÇÕES</h3>
             <div id="history-list">
-                <p style="color:#666; font-size:12px;">Histórico de bônus processado via Smart Contract MMN.</p>
+                <div class="history-item">
+                    <div>
+                        <div class="type-bonus">Bônus de Ativação</div>
+                        <div class="meta-text">Processado via Rede Multinível</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: 700;">+ R$ --</div>
+                        <div class="meta-text">Sistema Online</div>
+                    </div>
+                </div>
+                <p style="color:#444; font-size:12px; margin-top: 20px; text-align: center;">O histórico detalhado de transações é atualizado em tempo real.</p>
             </div>
         </div>
     </main>
 
     <script>
-        const user = JSON.parse(localStorage.getItem('usuarioLogado'));
+        const sessao = localStorage.getItem('usuarioLogado');
+        if (!sessao) window.location.href = 'index.html';
+        const user = JSON.parse(sessao);
 
         async function loadFinance() {
-            const res = await fetch('api_bridge.php?path=api/usuarios/todos');
-            const users = await res.json();
-            const u = users.find(u => u.email.toLowerCase() === user.email.toLowerCase());
+            try {
+                const res = await fetch('api_bridge.php?path=api/usuarios/todos');
+                if (!res.ok) throw new Error("Erro ao buscar dados");
+                
+                const users = await res.json();
+                // Localiza o usuário logado para exibir os dados financeiros reais
+                const u = users.find(u => u.email.toLowerCase() === user.email.toLowerCase());
 
-            if (u) {
-                document.getElementById('cur-balance').innerText = `R$ ${parseFloat(u.saldoDisponivel || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                document.getElementById('dir-earn').innerText = `R$ ${parseFloat(u.ganhosDiretos || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                document.getElementById('ind-earn').innerText = `R$ ${parseFloat(u.ganhosIndiretos || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                if (u) {
+                    document.getElementById('cur-balance').innerText = `R$ ${parseFloat(u.saldoDisponivel || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                    document.getElementById('dir-earn').innerText = `R$ ${parseFloat(u.ganhosDiretos || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                    document.getElementById('ind-earn').innerText = `R$ ${parseFloat(u.ganhosIndiretos || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                    
+                    // Atualiza o localstorage para manter os dados sincronizados
+                    localStorage.setItem('usuarioLogado', JSON.stringify(u));
+                }
+            } catch (err) {
+                console.error("Erro financeiro:", err);
             }
         }
-        loadFinance();
+        
+        window.onload = loadFinance;
     </script>
 </body>
 </html>

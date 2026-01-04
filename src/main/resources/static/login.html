@@ -4,32 +4,130 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LOGIN | DIETA EXATA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script src="config.js"></script>
     
     <style>
-        :root { --neon: #2ecc71; --bg: #050505; --card: #0d0d0d; --blue: #00f2ff; --red: #ff4444; }
-        body { background: var(--bg); color: white; font-family: 'Rajdhani'; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .login-wrapper { width: 90%; max-width: 400px; background: var(--card); padding: 30px; border: 1px solid #222; border-radius: 20px; box-shadow: 0 0 20px rgba(46, 204, 113, 0.1); }
-        h1 { font-family: 'Orbitron'; text-align: center; color: var(--neon); margin-bottom: 25px; }
-        input { width: 100%; padding: 14px; background: #111; border: 1px solid #333; border-radius: 8px; color: white; margin-bottom: 15px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
-        input:focus { border-color: var(--neon); outline: none; box-shadow: 0 0 10px rgba(46, 204, 113, 0.2); }
-        .btn-login { width: 100%; padding: 16px; background: var(--neon); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-family: 'Orbitron'; transition: 0.3s; }
-        .btn-login:hover { opacity: 0.8; transform: scale(1.02); box-shadow: 0 0 15px var(--neon); }
-        .btn-login:disabled { background: #444; cursor: not-allowed; }
-        p { text-align: center; margin-top: 20px; font-size: 14px; color: #888; }
-        a { color: var(--blue); text-decoration: none; font-weight: bold; }
-        
-        #status-msg { text-align: center; font-size: 13px; margin-top: 10px; min-height: 18px; font-family: 'Orbitron'; line-height: 1.4; }
+        :root { 
+            --neon: #2ecc71; 
+            --bg: #050505; 
+            --card: #0d0d0d; 
+            --blue: #00f2ff; 
+            --red: #ff4444; 
+            --text-dim: #888;
+        }
+
+        body { 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .login-wrapper { 
+            width: 90%; 
+            max-width: 380px; 
+            background: var(--card); 
+            padding: 40px; 
+            border: 1px solid #1a1a1a; 
+            border-radius: 24px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
+        }
+
+        h1 { 
+            font-size: 22px; 
+            font-weight: 800; 
+            text-align: center; 
+            color: var(--neon); 
+            margin-bottom: 30px; 
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 16px; 
+            background: #000; 
+            border: 1px solid #222; 
+            border-radius: 12px; 
+            color: white; 
+            margin-bottom: 15px; 
+            box-sizing: border-box; 
+            font-size: 15px; 
+            transition: 0.3s; 
+            font-family: 'Inter';
+        }
+
+        input:focus { 
+            border-color: var(--neon); 
+            outline: none; 
+            background: #080808;
+        }
+
+        .btn-login { 
+            width: 100%; 
+            padding: 18px; 
+            background: var(--neon); 
+            color: #000; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: 800; 
+            font-size: 13px;
+            cursor: pointer; 
+            text-transform: uppercase; 
+            transition: 0.3s; 
+            margin-top: 10px;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-login:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.2); 
+        }
+
+        .btn-login:disabled { 
+            background: #222; 
+            color: #555;
+            cursor: not-allowed; 
+        }
+
+        p { 
+            text-align: center; 
+            margin-top: 25px; 
+            font-size: 13px; 
+            color: var(--text-dim); 
+            font-weight: 500;
+        }
+
+        a { 
+            color: var(--blue); 
+            text-decoration: none; 
+            font-weight: 700; 
+        }
+
+        #status-msg { 
+            text-align: center; 
+            font-size: 12px; 
+            margin-top: 15px; 
+            min-height: 20px; 
+            font-weight: 700;
+            line-height: 1.5; 
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
     <div class="login-wrapper">
-        <h1>LOGIN</h1>
-        <input type="email" id="email" placeholder="Seu E-mail" required>
-        <input type="password" id="password" placeholder="Sua Senha" required>
-        <button id="btnLogin" class="btn-login" onclick="fazerLogin()">Entrar no Dashboard</button>
+        <h1>LOGIN TERMINAL</h1>
+        <input type="email" id="email" placeholder="E-mail de acesso" required>
+        <input type="password" id="password" placeholder="Senha secreta" required>
+        <button id="btnLogin" class="btn-login" onclick="fazerLogin()">Entrar agora</button>
         <div id="status-msg"></div>
         <p>Ainda não tem conta? <a href="cadastro.html">Cadastre-se aqui</a></p>
     </div>
@@ -53,9 +151,10 @@
             btn.disabled = true;
             btn.innerText = "AUTENTICANDO...";
             status.style.color = "var(--blue)";
-            status.innerText = "Acessando servidor...";
+            status.innerText = "Conectando ao terminal...";
 
             try {
+                // Mantendo a conexão com sua API real no Render via bridge
                 const response = await fetch('api_bridge.php?path=api/usuarios/todos');
                 
                 if (!response.ok) throw new Error("Servidor fora de linha");
@@ -69,16 +168,16 @@
 
                 if (usuario) {
                     const agora = new Date();
-                    // Adicionamos uma tolerância de 5 minutos para evitar erros de fuso horário/sincronia
+                    // Tolerância de 5 minutos para sincronia de servidor
                     agora.setMinutes(agora.getMinutes() - 5); 
 
                     const dataExp = usuario.dataExpiracao ? new Date(usuario.dataExpiracao) : null;
                     const isAdminMestre = (email.toLowerCase() === 'dietaexata@gmail.com' || email.toLowerCase() === 'toiiss@dietaexata.com.br');
 
-                    // CORREÇÃO: Verificamos se a data de expiração é futura OU se o usuário é Admin
+                    // Lógica MMN/Assinatura: Verifica expiração
                     if (!isAdminMestre && (!dataExp || dataExp < agora)) {
                         status.style.color = "var(--red)";
-                        status.innerHTML = "ACESSO BLOQUEADO<br>Sua assinatura expirou ou aguarda ativação.";
+                        status.innerHTML = "ACESSO BLOQUEADO<br>Assinatura expirada ou aguardando ativação.";
                         
                         localStorage.setItem('plano_escolhido', usuario.plano || 'BRONZE');
                         
@@ -88,11 +187,11 @@
                         return;
                     }
 
-                    // SUCESSO
+                    // Login Autorizado
                     status.style.color = "var(--neon)";
                     status.innerText = "Acesso autorizado! Redirecionando...";
                     
-                    // IMPORTANTE: Salva os dados atualizados no localStorage
+                    // Salva a sessão localmente
                     localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
                     
                     setTimeout(() => {
@@ -105,7 +204,7 @@
 
                 } else {
                     btn.disabled = false;
-                    btn.innerText = "Entrar no Dashboard";
+                    btn.innerText = "Entrar agora";
                     status.style.color = "var(--red)";
                     status.innerText = "E-mail ou senha incorretos.";
                 }
@@ -118,6 +217,7 @@
             }
         }
 
+        // Atalho tecla Enter
         document.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') fazerLogin();
         });

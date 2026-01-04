@@ -4,70 +4,176 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PLANOS | DIETA EXATA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script src="config.js"></script>
 
     <style>
-        :root { --neon: #00f2ff; --bg: #050505; --gold: #ffd700; --card: #0d0d0d; }
-        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; text-align: center; padding: 20px; margin: 0; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
-        
-        h1 { font-family: 'Orbitron'; font-size: 28px; letter-spacing: 2px; margin-bottom: 10px; }
-        .subtitle { color: #888; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 3px; font-size: 12px; }
+        :root { 
+            --neon: #00f2ff; 
+            --bg: #050505; 
+            --gold: #ffac00; 
+            --card: #0d0d0d; 
+            --text-dim: #888;
+        }
 
-        .grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; max-width: 1200px; margin: 0 auto; }
+        body { 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            text-align: center; 
+            padding: 40px 20px; 
+            margin: 0; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        h1 { 
+            font-size: 32px; 
+            font-weight: 800; 
+            letter-spacing: -0.02em; 
+            margin-bottom: 10px; 
+            text-transform: uppercase;
+        }
+        
+        .subtitle { 
+            color: var(--text-dim); 
+            margin-bottom: 50px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.2em; 
+            font-size: 11px; 
+            font-weight: 700;
+        }
+
+        .grid { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 30px; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
         
         .card { 
             background: var(--card); 
-            border: 1px solid #222; 
-            padding: 40px 30px; 
-            width: 280px; 
-            border-radius: 20px; 
+            border: 1px solid #1a1a1a; 
+            padding: 45px 35px; 
+            width: 300px; 
+            border-radius: 24px; 
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        .card:hover { border-color: var(--neon); transform: translateY(-15px); box-shadow: 0 10px 30px rgba(0, 242, 255, 0.15); }
+        .card:hover { 
+            border-color: var(--neon); 
+            transform: translateY(-12px); 
+            box-shadow: 0 20px 40px rgba(0, 242, 255, 0.1); 
+            background: #111;
+        }
         
-        .card h3 { font-family: 'Orbitron'; font-size: 18px; margin: 0; color: #fff; }
-        .card h2 { font-family: 'Orbitron'; font-size: 36px; margin: 20px 0; color: var(--neon); }
+        .card h3 { 
+            font-size: 12px; 
+            font-weight: 800; 
+            margin: 0; 
+            color: var(--text-dim); 
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .card h2 { 
+            font-size: 42px; 
+            font-weight: 800; 
+            margin: 20px 0; 
+            color: white; 
+            letter-spacing: -0.04em;
+        }
         
-        .features { list-style: none; padding: 0; margin: 20px 0; text-align: left; font-size: 14px; color: #aaa; }
-        .features li { margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-        .features li::before { content: '✓'; color: var(--neon); font-weight: bold; }
+        .features { 
+            list-style: none; 
+            padding: 0; 
+            margin: 25px 0; 
+            text-align: left; 
+            font-size: 14px; 
+            color: #777; 
+            flex-grow: 1;
+        }
+
+        .features li { 
+            margin-bottom: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            font-weight: 500;
+        }
+
+        .features li::before { 
+            content: '✓'; 
+            color: var(--neon); 
+            font-weight: 900; 
+        }
 
         .btn-compra { 
             background: var(--neon); 
             color: black; 
             border: none; 
-            padding: 16px; 
+            padding: 18px; 
             width: 100%; 
-            font-family: 'Orbitron'; 
-            font-weight: bold; 
+            font-weight: 800; 
+            font-size: 13px;
             cursor: pointer; 
-            border-radius: 8px; 
+            border-radius: 14px; 
             margin-top: 20px; 
             transition: 0.3s;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .btn-compra:hover { transform: scale(1.05); filter: brightness(1.2); }
+        .btn-compra:hover { 
+            transform: scale(1.02); 
+            filter: brightness(1.1); 
+            box-shadow: 0 10px 20px rgba(0, 242, 255, 0.2);
+        }
 
         /* Estilo para o Plano Ouro */
-        .ouro { border: 1px solid var(--gold); background: linear-gradient(145deg, #0d0d0d 0%, #1a1600 100%); }
-        .ouro h3, .ouro h2 { color: var(--gold); }
+        .ouro { 
+            border: 1px solid rgba(255, 172, 0, 0.3); 
+            background: linear-gradient(145deg, #0d0d0d 0%, #1a1500 100%); 
+        }
+        
+        .ouro h3 { color: var(--gold); }
+        .ouro h2 { color: white; }
         .ouro .btn-compra { background: var(--gold); }
         .ouro .features li::before { color: var(--gold); }
-        .badge-vip { position: absolute; top: 15px; right: -35px; background: var(--gold); color: black; font-family: 'Orbitron'; font-size: 10px; padding: 5px 40px; transform: rotate(45deg); font-weight: bold; }
+        
+        .badge-vip { 
+            position: absolute; 
+            top: 15px; 
+            right: -35px; 
+            background: var(--gold); 
+            color: black; 
+            font-size: 10px; 
+            padding: 6px 40px; 
+            transform: rotate(45deg); 
+            font-weight: 900; 
+            text-transform: uppercase;
+        }
 
-        @media (max-width: 768px) { .grid { flex-direction: column; align-items: center; } }
+        @media (max-width: 768px) { 
+            .grid { flex-direction: column; align-items: center; } 
+            h1 { font-size: 26px; }
+        }
     </style>
 </head>
 <body>
 
-    <h1 style="font-family:'Orbitron'">ESCOLHA SEU <span style="color:var(--neon)">LEVEL</span></h1>
-    <div class="subtitle">Ative seu protocolo e comece a lucrar</div>
+    <h1>ESCOLHA SEU <span style="color:var(--neon)">LEVEL</span></h1>
+    <div class="subtitle">Ative seu protocolo e comece a lucrar na rede</div>
     
     <div class="grid">
         <div class="card">
@@ -76,7 +182,8 @@
             <ul class="features">
                 <li>Dieta Básica I.A.</li>
                 <li>1 Nível de Indicação</li>
-                <li>Suporte via Grupo</li>
+                <li>Suporte via Comunidade</li>
+                <li>Dashboard Financeiro</li>
             </ul>
             <button class="btn-compra" onclick="comprar('BRONZE')">ASSINAR AGORA</button>
         </div>
@@ -85,37 +192,39 @@
             <h3>PRATA</h3>
             <h2>R$ 49,99</h2>
             <ul class="features">
-                <li>Dieta Personalizada</li>
+                <li>Dieta Personalizada I.A.</li>
                 <li>2 Níveis de Indicação</li>
                 <li>Acesso ao Terminal Pro</li>
+                <li>Ganhos Alavancados</li>
             </ul>
             <button class="btn-compra" onclick="comprar('PRATA')">ASSINAR AGORA</button>
         </div>
 
         <div class="card ouro">
             <div class="badge-vip">BEST SELLER</div>
-            <h3>⭐ OURO</h3>
+            <h3>⭐ OURO VIP</h3>
             <h2>R$ 79,99</h2>
             <ul class="features">
                 <li>Protocolo Full Biohacking</li>
                 <li>Níveis de Indicação Ilimitados</li>
-                <li>Bônus de Liderança</li>
+                <li>Participação nos Lucros</li>
+                <li>Bônus de Liderança MMN</li>
             </ul>
             <button class="btn-compra" onclick="comprar('OURO')">ASSINAR AGORA</button>
         </div>
     </div>
 
     <script>
-        // LÓGICA DE AFILIADO: Captura o indicador da URL e persiste no sistema
+        // LÓGICA DE AFILIADO/MMN: Captura o indicador da URL e persiste no sistema
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
             const ref = urlParams.get('ref');
             
             if (ref) {
-                // INCLUSÃO: Decodifica e limpa o e-mail para garantir a conexão MMN
+                // Decodifica e limpa o e-mail para garantir a conexão da árvore MMN
                 const indicadorLimpo = decodeURIComponent(ref).toLowerCase().trim();
                 localStorage.setItem('indicador_email', indicadorLimpo);
-                console.log("Rastreamento de indicação ativo: " + indicadorLimpo);
+                console.log("Sistema MMN: Rastreamento de indicação ativo para " + indicadorLimpo);
             }
         };
 
@@ -123,14 +232,14 @@
             // Salva a escolha do usuário para o fluxo de cadastro
             localStorage.setItem('plano_escolhido', plano);
             
-            // INCLUSÃO: Define o valor para conferência futura
+            // Define o valor para conferência no checkout PIX
             let valor = plano === 'OURO' ? 79.99 : (plano === 'PRATA' ? 49.99 : 19.99);
             localStorage.setItem('valor_plano', valor);
             
-            // Recupera o indicador salvo no carregamento da página
+            // Recupera o indicador salvo (se houver) para passar ao cadastro
             const ref = localStorage.getItem('indicador_email');
             
-            // Redireciona para o cadastro com os parâmetros necessários para o MMN no Java
+            // Redireciona para o cadastro enviando o indicador e o plano selecionado
             if (ref) {
                 window.location.href = `cadastro.html?ref=${encodeURIComponent(ref)}&plano=${plano}`;
             } else {

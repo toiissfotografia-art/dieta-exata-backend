@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TERMINAL ADMINISTRATIVO | DIETA EXATA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root { 
@@ -14,9 +14,17 @@
             --green: #2ecc71; 
             --red: #ff4444; 
             --blue: #00f2ff;
+            --text-dim: #a0a0a0;
         }
         
-        body { background: var(--bg); color: white; font-family: 'Rajdhani'; padding: 20px; margin: 0; }
+        body { 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            padding: 20px; 
+            margin: 0; 
+            -webkit-font-smoothing: antialiased;
+        }
 
         .admin-container { max-width: 1200px; margin: 0 auto; }
 
@@ -24,77 +32,123 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px;
+            padding: 24px;
             background: var(--card);
             border: 1px solid #222;
-            border-radius: 15px;
-            margin-bottom: 20px;
+            border-radius: 16px;
+            margin-bottom: 24px;
         }
 
-        h1 { font-family: 'Orbitron'; color: var(--neon); font-size: 22px; margin: 0; text-shadow: 0 0 10px var(--neon); }
+        h1 { 
+            font-size: 20px; 
+            font-weight: 700; 
+            margin: 0; 
+            letter-spacing: -0.02em;
+            color: var(--neon);
+        }
 
         /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            gap: 16px;
             margin-bottom: 30px;
         }
 
         .stat-card {
             background: var(--card);
             padding: 20px;
-            border-radius: 12px;
+            border-radius: 16px;
             border: 1px solid #222;
-            text-align: center;
+            text-align: left;
         }
 
-        .stat-card h3 { font-size: 12px; color: #888; margin: 0; text-transform: uppercase; }
-        .stat-value { font-size: 22px; font-weight: bold; color: var(--green); margin-top: 10px; font-family: 'Orbitron'; }
+        .stat-card h3 { 
+            font-size: 11px; 
+            color: var(--text-dim); 
+            margin: 0; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+        
+        .stat-value { 
+            font-size: 24px; 
+            font-weight: 700; 
+            color: var(--green); 
+            margin-top: 8px; 
+            letter-spacing: -0.03em;
+        }
 
-        /* Busca Profissional */
+        /* Busca */
         .search-box { 
             width: 100%; 
-            padding: 15px; 
+            padding: 16px; 
+            box-sizing: border-box;
             background: #111; 
             border: 1px solid #333; 
-            border-radius: 8px; 
+            border-radius: 12px; 
             color: white; 
-            font-family: 'Rajdhani'; 
-            font-size: 16px; 
-            margin-bottom: 20px;
+            font-family: 'Inter', sans-serif; 
+            font-size: 15px; 
+            margin-bottom: 24px;
             outline: none;
-            transition: 0.3s;
+            transition: 0.2s;
         }
-        .search-box:focus { border-color: var(--neon); box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); }
+        .search-box:focus { border-color: var(--neon); box-shadow: 0 0 0 2px rgba(0, 242, 255, 0.1); }
 
-        /* Tabela Unificada */
-        .table-container { background: var(--card); border-radius: 10px; border: 1px solid #222; overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background: #111; color: var(--neon); font-family: 'Orbitron'; padding: 15px; font-size: 11px; text-transform: uppercase; }
-        td { padding: 15px; border-bottom: 1px solid #222; font-size: 14px; }
+        /* Tabela */
+        .table-container { 
+            background: var(--card); 
+            border-radius: 16px; 
+            border: 1px solid #222; 
+            overflow-x: auto; 
+        }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 800px; }
+        th { 
+            background: #111; 
+            color: var(--text-dim); 
+            padding: 16px; 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+        td { padding: 16px; border-bottom: 1px solid #222; font-size: 14px; vertical-align: middle; }
         
-        tr.pendente { background: rgba(255, 204, 0, 0.03); }
+        tr.pendente { background: rgba(255, 204, 0, 0.02); }
+        tr:hover { background: rgba(255, 255, 255, 0.02); }
 
         /* Botões */
         .btn-action {
-            padding: 8px 15px;
-            border-radius: 5px;
-            font-family: 'Orbitron';
-            font-weight: bold;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
             cursor: pointer;
             border: none;
             text-transform: uppercase;
             font-size: 10px;
-            transition: 0.3s;
+            transition: 0.2s;
+            letter-spacing: 0.03em;
         }
-        .btn-activate { background: var(--green); color: black; }
-        .btn-activate:hover { box-shadow: 0 0 15px var(--green); transform: scale(1.05); }
-        .btn-delete { background: var(--red); color: white; margin-left: 5px; }
-        .btn-logout { background: var(--red); color: white; font-size: 12px; }
+        .btn-activate { background: var(--green); color: #050505; }
+        .btn-activate:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-delete { background: #1a1a1a; color: var(--red); border: 1px solid #333; margin-left: 5px; }
+        .btn-delete:hover { background: var(--red); color: white; border-color: var(--red); }
+        .btn-logout { background: #1a1a1a; color: white; border: 1px solid #333; font-size: 11px; }
+        .btn-logout:hover { background: var(--red); border-color: var(--red); }
 
-        small { color: #666; display: block; }
-        .badge-status { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        small { color: var(--text-dim); display: block; margin-top: 2px; font-size: 12px; }
+        .badge-status { 
+            padding: 4px 8px; 
+            border-radius: 6px; 
+            font-size: 10px; 
+            font-weight: 700; 
+            text-transform: uppercase;
+        }
+
+        strong { font-weight: 600; }
     </style>
 </head>
 <body>
@@ -102,7 +156,7 @@
     <div class="admin-container">
         <div class="header">
             <h1>TERMINAL <span style="color:#fff">ADMIN</span></h1>
-            <button class="btn-action btn-logout" onclick="logout()">SAIR</button>
+            <button class="btn-action btn-logout" onclick="logout()">SAIR DO SISTEMA</button>
         </div>
 
         <div class="stats-grid">
@@ -194,29 +248,28 @@
                         <small>${u.email}</small>
                     </td>
                     <td>
-                        <span class="badge-status" style="background: ${isPendente ? 'rgba(255,204,0,0.2)' : 'rgba(46,204,113,0.2)'}; color: ${isPendente ? '#ffcc00' : '#2ecc71'}">
+                        <span class="badge-status" style="background: ${isPendente ? 'rgba(255,204,0,0.1)' : 'rgba(46,204,113,0.1)'}; color: ${isPendente ? '#ffcc00' : '#2ecc71'}">
                             ${u.plano || 'AGUARDANDO'}
                         </span>
                     </td>
-                    <td style="color: ${isExpirado ? 'var(--red)' : 'var(--green)'}">${dataExp}</td>
-                    <td>R$ ${(u.saldoDisponivel || 0).toFixed(2)}</td>
+                    <td style="color: ${isExpirado ? 'var(--red)' : 'var(--green)'}; font-weight: 500;">${dataExp}</td>
+                    <td><strong>R$ ${(u.saldoDisponivel || 0).toFixed(2)}</strong></td>
                     <td>
                         <button class="btn-action btn-activate" onclick="ativarUsuario('${u.email}')">
                             ${isPendente ? 'ATIVAR ACESSO' : 'RENOVAR 30D'}
                         </button>
-                        <button class="btn-action btn-delete" onclick="removerUsuario('${u.email}')">REMOVER</button>
+                        <button class="btn-action btn-delete" onclick="removerUsuario('${u.email}')">EXCLUIR</button>
                     </td>
                 `;
                 list.appendChild(tr);
             });
         }
 
-        // ATIVAR USUÁRIO (Lógica MMN Mantida)
+        // ATIVAR USUÁRIO (Lógica MMN Mantida conforme instrução)
         async function ativarUsuario(email) {
             if(!confirm(`Liberar acesso para ${email}? Isso processará os bônus da rede.`)) return;
 
             try {
-                // Rota unificada com sua api_bridge
                 const res = await fetch(`api_bridge.php?path=api/usuarios/renovar-plano-admin/${email}`, {
                     method: 'POST'
                 });

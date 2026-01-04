@@ -4,43 +4,148 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CONFIGURAR DIETA | DIETA EXATA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="config.js"></script>
 
     <style>
-        :root { --neon: #00f2ff; --bg: #050505; --card: #0d0d0d; --green: #00ff88; }
-        body { background: var(--bg); color: white; font-family: 'Rajdhani'; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box;}
+        :root { 
+            --neon: #00f2ff; 
+            --bg: #050505; 
+            --card: #0d0d0d; 
+            --green: #00ff88; 
+            --text-dim: #666;
+        }
         
-        .container { background: var(--card); padding: 40px; border-radius: 20px; border: 1px solid #222; width: 100%; max-width: 600px; box-shadow: 0 0 30px rgba(0, 242, 255, 0.05); }
+        body { 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px; 
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
         
-        h2 { font-family: 'Orbitron'; color: var(--neon); text-align: center; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; }
+        .container { 
+            background: var(--card); 
+            padding: 40px; 
+            border-radius: 24px; 
+            border: 1px solid #222; 
+            width: 100%; 
+            max-width: 600px; 
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); 
+        }
+        
+        h2 { 
+            font-size: 22px; 
+            font-weight: 700; 
+            color: var(--neon); 
+            text-align: center; 
+            margin-bottom: 30px; 
+            text-transform: uppercase; 
+            letter-spacing: -0.02em; 
+        }
 
         .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .form-group { margin-bottom: 20px; }
         .full-width { grid-column: span 2; }
 
-        label { display: block; margin-bottom: 8px; font-size: 12px; color: #555; font-family: 'Orbitron'; text-transform: uppercase; }
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-size: 11px; 
+            color: var(--text-dim); 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em;
+        }
         
         input, select { 
-            width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: white; 
-            border-radius: 8px; font-family: 'Rajdhani'; font-size: 16px; outline: none; box-sizing: border-box; transition: 0.3s;
+            width: 100%; 
+            padding: 14px; 
+            background: #111; 
+            border: 1px solid #333; 
+            color: white; 
+            border-radius: 12px; 
+            font-family: 'Inter', sans-serif; 
+            font-size: 15px; 
+            outline: none; 
+            box-sizing: border-box; 
+            transition: 0.2s;
         }
-        input:focus, select:focus { border-color: var(--neon); box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); }
+        
+        input:focus, select:focus { 
+            border-color: var(--neon); 
+            box-shadow: 0 0 0 2px rgba(0, 242, 255, 0.1); 
+            background: #161616;
+        }
 
         .btn-salvar { 
-            background: var(--neon); color: #000; border: none; padding: 18px; border-radius: 8px; 
-            font-family: 'Orbitron'; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; 
-            transition: 0.3s; text-transform: uppercase;
+            background: var(--neon); 
+            color: #000; 
+            border: none; 
+            padding: 18px; 
+            border-radius: 12px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            width: 100%; 
+            margin-top: 20px; 
+            transition: 0.3s; 
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 0.05em;
         }
-        .btn-salvar:hover { transform: scale(1.02); box-shadow: 0 0 20px var(--neon); }
+        .btn-salvar:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 242, 255, 0.3); }
 
-        .btn-back { background: transparent; color: #555; border: none; cursor: pointer; font-family: 'Orbitron'; font-size: 10px; margin-bottom: 20px; display: block; text-decoration: none; }
+        .btn-back { 
+            color: var(--text-dim); 
+            border: none; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 11px; 
+            margin-bottom: 20px; 
+            display: inline-block; 
+            text-decoration: none; 
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
         .btn-back:hover { color: var(--neon); }
 
-        #resultado-dieta { margin-top: 30px; padding: 20px; background: #000; border: 1px dashed var(--green); border-radius: 10px; display: none; }
-        #resultado-dieta h3 { font-family: 'Orbitron'; color: var(--green); font-size: 14px; margin-top: 0; }
-        #dieta-texto { font-size: 14px; line-height: 1.6; white-space: pre-wrap; color: #ccc; margin-bottom: 20px; }
+        #resultado-dieta { 
+            margin-top: 30px; 
+            padding: 24px; 
+            background: #000; 
+            border: 1px dashed var(--green); 
+            border-radius: 16px; 
+            display: none; 
+            animation: fadeIn 0.4s ease;
+        }
+        
+        #resultado-dieta h3 { 
+            font-size: 14px; 
+            color: var(--green); 
+            font-weight: 700; 
+            margin-top: 0; 
+            text-transform: uppercase;
+        }
+        
+        #dieta-texto { 
+            font-size: 14px; 
+            line-height: 1.6; 
+            white-space: pre-wrap; 
+            color: #ccc; 
+            margin-bottom: 20px; 
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -127,8 +232,7 @@
             dietaGerada += `\nESTRATÉGIA: Evite açúcares e farinhas brancas.`;
 
             try {
-                // --- INCLUSÃO: AJUSTE PARA PASSAR PELA PONTE PHP ---
-                // Mudamos a chamada para usar a api_bridge.php e o path correto
+                // Chamada via api_bridge.php conforme sua infraestrutura no Render
                 const res = await fetch(`api_bridge.php?path=api/usuarios/atualizar-dieta`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -137,7 +241,6 @@
                         dietaAtual: dietaGerada
                     })
                 });
-                // --- FIM DA INCLUSÃO ---
 
                 if (res.ok) {
                     // Atualiza o localstorage para o dashboard ler sem precisar deslogar
