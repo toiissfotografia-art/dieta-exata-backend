@@ -2,9 +2,11 @@ package com.dietaexata.controller;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -74,6 +76,7 @@ public class UsuarioController {
             usuario.setSaldoSolicitado(0.0);
             usuario.setGanhosDiretos(0.0);
             usuario.setGanhosIndiretos(0.0);
+            usuario.setGanhosTotaisAcumulados(0.0);
             usuario.setNivel1count(0);
             usuario.setNivel2count(0);
             usuario.setNivel3count(0);
@@ -95,14 +98,13 @@ public class UsuarioController {
         }
     }
 
-    // --- ENDPOINT PARA SOLICITAR SAQUE (CORRIGIDO PARA ATUALIZAR DASHBOARD) ---
     @PostMapping("/solicitar-saque")
     public ResponseEntity<?> solicitarSaque(@RequestBody Map<String, Object> payload) {
         try {
             String email = (String) payload.get("email");
             if (payload.get("valor") == null) return ResponseEntity.badRequest().body("Valor não informado.");
             
-            Double valorSaque = Double.parseDouble(payload.get("valor").toString());
+            Double valorSaque = Double.valueOf(payload.get("valor").toString());
 
             Usuario u = repository.findByEmail(email);
             if (u == null) return ResponseEntity.status(404).body("Usuário não encontrado.");
@@ -110,14 +112,10 @@ public class UsuarioController {
             double saldoAtual = Optional.ofNullable(u.getSaldoDisponivel()).orElse(0.0);
 
             if (saldoAtual >= valorSaque) {
-                // Deduz do disponível e move para o solicitado
                 u.setSaldoDisponivel(saldoAtual - valorSaque);
                 u.setSaldoSolicitado(Optional.ofNullable(u.getSaldoSolicitado()).orElse(0.0) + valorSaque);
                 
-                // Salva e força a atualização no banco
                 Usuario usuarioAtualizado = repository.saveAndFlush(u);
-                
-                // RETORNA O USUÁRIO ATUALIZADO (Isso permite que o front-end zere o saldo na tela)
                 return ResponseEntity.ok(usuarioAtualizado);
             } else {
                 return ResponseEntity.badRequest().body("Saldo insuficiente.");
@@ -127,7 +125,79 @@ public class UsuarioController {
         }
     }
 
-    // --- MÉTODOS DE INTEGRAÇÃO ---
+    @PostMapping("/admin/finalizar-saque")
+    public ResponseEntity<?> finalizarSaque(@RequestBody Map<String, String> dados) {
+        try {
+            String emailUsuario = dados.get("emailUsuario");
+            Usuario u = repository.findByEmail(emailUsuario);
+            
+            if (u == null) return ResponseEntity.status(404).body("Usuário não encontrado.");
+
+            u.setSaldoSolicitado(0.0);
+            repository.saveAndFlush(u);
+            
+            return ResponseEntity.ok(Map.of("mensagem", "Pagamento processado com sucesso!"));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Erro ao finalizar saque.");
+        }
+    }
+
+    @GetMapping("/admin/estatisticas")
+    public ResponseEntity<?> getEstatisticasAdmin() {
+        List<Usuario> todos = repository.findAll();
+        
+        double faturamentoBruto = todos.stream()
+            .filter(u -> u.getPlano() != null && !u.getPlano().equals("BRONZE"))
+            .mapToDouble(u -> u.getPlano().equalsIgnoreCase("OURO") ? 79.99 : 49.99)
+            .sum();
+
+        long ativos = todos.stream()
+            .filter(u -> u.getDataExpiracao() != null && u.getDataExpiracao().isAfter(LocalDateTime.now()))
+            .count();
+
+        double saquesPendentes = todos.stream()
+            .mapToDouble(u -> Optional.ofNullable(u.getSaldoSolicitado()).orElse(0.0))
+            .sum();
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("faturamentoBruto", faturamentoBruto);
+        stats.put("usuariosAtivos", ativos);
+        stats.put("saquesPendentes", saquesPendentes);
+        stats.put("totalPago", 0.0); 
+        stats.put("reservaEmpresa", faturamentoBruto - saquesPendentes);
+
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/admin/saques-pendentes")
+    public ResponseEntity<?> listarSaquesPendentes() {
+        List<Usuario> comSaque = repository.findAll().stream()
+            .filter(u -> Optional.ofNullable(u.getSaldoSolicitado()).orElse(0.0) > 0)
+            .collect(Collectors.toList());
+            
+        List<Map<String, Object>> listaFormatada = comSaque.stream().map(u -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", u.getEmail()); 
+            map.put("emailUsuario", u.getEmail());
+            map.put("nomeUsuario", u.getNome());
+            
+            // CORREÇÃO: Agora usando o campo chavePix que existe na sua Model
+            map.put("chavePix", u.getChavePix() != null ? u.getChavePix() : u.getEmail());
+            
+            map.put("valor", u.getSaldoSolicitado());
+            map.put("dataSolicitacao", LocalDateTime.now()); 
+            return map;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(listaFormatada);
+    }
+
+    @PostMapping("/renovar-plano-admin/{email}")
+    public ResponseEntity<?> renovarPlanoAdminEndpoint(@PathVariable String email) {
+        renovarPlanoAdmin(email);
+        processarBonusPercentualPeloEmail(email, 79.99);
+        return ResponseEntity.ok(Map.of("mensagem", "Sucesso"));
+    }
 
     public void renovarPlanoAdmin(String email) {
         Usuario u = repository.findByEmail(email);
@@ -199,7 +269,12 @@ public class UsuarioController {
 
             if ("SALDO".equalsIgnoreCase(metodo)) {
                 String novoPlano = payload.get("plano") != null ? payload.get("plano").toUpperCase() : "OURO";
-                double custo = novoPlano.equals("OURO") ? 79.99 : (novoPlano.equals("PRATA") ? 49.99 : 19.99);
+                double custo = switch (novoPlano) {
+                    case "OURO" -> 79.99;
+                    case "PRATA" -> 49.99;
+                    default -> 19.99;
+                };
+                
                 double saldo = Optional.ofNullable(u.getSaldoDisponivel()).orElse(0.0);
                 if (saldo < custo) return ResponseEntity.badRequest().body("{\"erro\":\"Saldo insuficiente.\"}");
                 
@@ -216,20 +291,16 @@ public class UsuarioController {
         }
     }
 
-    // LÓGICA DE MMN (Multi-Level Marketing) - PRESERVADA E CONECTADA
+    // LÓGICA DE MMN ATUALIZADA PARA USAR GANHOS ACUMULADOS
     private void processarGanhosRede(Usuario novo) {
         if (novo.getIndicadoPor() == null || novo.getIndicadoPor().isEmpty()) return;
 
-        double valorBaseMMN = 0.0;
         String planoVendido = (novo.getPlano() != null) ? novo.getPlano().toUpperCase() : "BRONZE";
-        
-        if (planoVendido.equals("OURO")) {
-            valorBaseMMN = 79.99;
-        } else if (planoVendido.equals("PRATA")) {
-            valorBaseMMN = 49.99;
-        } else {
-            valorBaseMMN = 19.99;
-        }
+        double valorBaseMMN = switch (planoVendido) {
+            case "OURO" -> 79.99;
+            case "PRATA" -> 49.99;
+            default -> 19.99;
+        };
 
         Usuario pai = repository.findByEmail(novo.getIndicadoPor().toLowerCase().trim());
         if (pai != null) {
@@ -265,6 +336,10 @@ public class UsuarioController {
     private void creditarValor(Usuario u, double valor, boolean isDireto) {
         if (u == null) return;
         u.setSaldoDisponivel(Optional.ofNullable(u.getSaldoDisponivel()).orElse(0.0) + valor);
+        
+        // Atualiza os ganhos acumulados (O histórico que nunca zera)
+        u.setGanhosTotaisAcumulados(Optional.ofNullable(u.getGanhosTotaisAcumulados()).orElse(0.0) + valor);
+
         if (isDireto) u.setGanhosDiretos(Optional.ofNullable(u.getGanhosDiretos()).orElse(0.0) + valor);
         else u.setGanhosIndiretos(Optional.ofNullable(u.getGanhosIndiretos()).orElse(0.0) + valor);
     }
@@ -272,7 +347,7 @@ public class UsuarioController {
     @GetMapping("/todos")
     public List<Usuario> listarTodos() { return repository.findAll(); }
 
-    @DeleteMapping("/deletar/{email}")
+    @DeleteMapping("/excluir/{email}")
     public ResponseEntity<?> eliminarUsuario(@PathVariable String email) {
         Usuario u = repository.findByEmail(email);
         if (u != null) { repository.delete(u); return ResponseEntity.ok("Removido"); }
