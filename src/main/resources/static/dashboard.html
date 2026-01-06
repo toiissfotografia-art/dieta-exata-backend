@@ -260,9 +260,12 @@
             text-align: center;
         }
 
-        /* Novas Classes para Admin */
+        /* Estilo Admin */
         .admin-badge { background: var(--neon); color: black; font-size: 9px; padding: 2px 5px; border-radius: 4px; margin-left: 5px; vertical-align: middle; }
         .mmn-tag { font-size: 10px; color: var(--text-dim); display: block; }
+
+        .section-toggle { display: none; }
+        .section-toggle.active-section { display: block; }
 
         @media (max-width: 768px) { 
             body { flex-direction: column; } 
@@ -299,13 +302,13 @@
             <div id="system-status" style="font-size: 11px; font-weight: 700; color: var(--green);">● SISTEMA ONLINE</div>
         </header>
 
-        <div id="main-dash" class="section-toggle">
+        <div id="main-dash" class="section-toggle active-section">
             <div class="stats-grid">
                 <div class="stat-card balance">
                     <h4>Saldo Disponível</h4>
                     <div class="value" id="balance">R$ 0,00</div>
                     <div id="pending-withdrawal-info">AGUARDANDO PAGAMENTO...</div>
-                    <button class="btn-withdraw" id="main-withdraw-btn" onclick="abrirModalSaque()">SOLICITAR SAQUE PIX</button>
+                    <button class="btn-withdraw" id="main-withdraw-btn" onclick="abrirModalSaque()">SAQUE TOTAL PIX</button>
                     <br>
                     <small style="color: #666; font-size: 11px;">Mínimo para saque: R$ 50,00</small>
                 </div>
@@ -349,7 +352,7 @@
             </div>
         </div>
 
-        <div id="rede-section" class="diet-box section-toggle" style="display: none; margin-top: 0;">
+        <div id="rede-section" class="diet-box section-toggle" style="margin-top: 0;">
             <h3 style="color: var(--neon); font-size: 16px; font-weight: 700;">MINHA REDE (NÍVEL 1)</h3>
             <table class="data-table">
                 <thead>
@@ -363,7 +366,7 @@
             </table>
         </div>
 
-        <div id="financeiro-section" class="diet-box section-toggle" style="display: none; margin-top: 0;">
+        <div id="financeiro-section" class="diet-box section-toggle" style="margin-top: 0;">
             <h3 style="color: var(--neon); font-size: 16px; font-weight: 700;">DETALHAMENTO FINANCEIRO</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 25px 0;">
                 <div style="background: #000; padding: 20px; border-radius: 12px; border: 1px solid #1a1a1a;">
@@ -378,7 +381,7 @@
             <p style="font-size: 12px; color: #666; line-height: 1.6;">As comissões são creditadas instantaneamente após o pagamento do PIX de membros até o 3º nível.</p>
         </div>
 
-        <div id="admin-users" class="diet-box section-toggle" style="display: none; margin-top: 0;">
+        <div id="admin-users" class="diet-box section-toggle" style="margin-top: 0;">
             <h3 style="color: var(--neon); font-size: 16px; font-weight: 700;">GESTÃO DE USUÁRIOS MASTER</h3>
             <input type="text" id="search-admin" class="transfer-input" placeholder="Buscar por e-mail ou nome..." onkeyup="filterAdminUsers()">
             <table class="data-table">
@@ -394,7 +397,7 @@
             </table>
         </div>
 
-        <div id="admin-withdraws" class="diet-box section-toggle" style="display: none; margin-top: 0;">
+        <div id="admin-withdraws" class="diet-box section-toggle" style="margin-top: 0;">
             <h3 style="color: var(--neon); font-size: 16px; font-weight: 700;">SAQUES PENDENTES</h3>
             <table class="data-table">
                 <thead>
@@ -412,11 +415,11 @@
 
     <div id="modalSaque" class="modal">
         <div class="modal-content">
-            <h3 style="color: var(--neon); margin-top: 0; font-size: 16px;">RETIRADA PIX</h3>
-            <p style="font-size: 12px; color: #888; margin-bottom: 20px;">Defina o valor e sua chave para recebimento.</p>
-            <input type="number" id="saque-valor" class="transfer-input" placeholder="Valor do saque (R$)">
+            <h3 style="color: var(--neon); margin-top: 0; font-size: 16px;">RETIRADA TOTAL PIX</h3>
+            <p style="font-size: 12px; color: #888; margin-bottom: 20px;">Você está solicitando o saque de todo o seu saldo disponível.</p>
+            <div id="modal-valor-exibicao" style="font-size: 24px; color: var(--green); font-weight: 800; margin-bottom: 20px;">R$ 0,00</div>
             <input type="text" id="saque-chave" class="transfer-input" placeholder="Chave PIX (CPF, Celular, etc)">
-            <button class="btn-action" id="btn-confirm-saque" onclick="confirmarSaque()">CONFIRMAR E ABATER SALDO</button>
+            <button class="btn-action" id="btn-confirm-saque" onclick="confirmarSaque()">CONFIRMAR E SACAR TUDO</button>
             <button class="btn-action" style="background: #222; color: #888; border: none; margin-top: 10px;" onclick="fecharModalSaque()">CANCELAR</button>
         </div>
     </div>
@@ -432,7 +435,7 @@
         }
 
         function showSection(sectionId) {
-            document.querySelectorAll('.section-toggle').forEach(s => s.style.display = 'none');
+            document.querySelectorAll('.section-toggle').forEach(s => s.classList.remove('active-section'));
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             
             const btnMap = {
@@ -443,99 +446,58 @@
                 'admin-withdraws': 'btn-adm-saques'
             };
 
-            document.getElementById(sectionId).style.display = 'block';
-            if(sectionId === 'main-dash') document.getElementById('content-main').style.display = 'flex';
-            
+            const section = document.getElementById(sectionId);
+            if(section) section.classList.add('active-section');
             if (btnMap[sectionId]) document.getElementById(btnMap[sectionId]).classList.add('active');
-        }
-
-        function abrirModalSaque() { document.getElementById('modalSaque').style.display = 'flex'; }
-        function fecharModalSaque() { document.getElementById('modalSaque').style.display = 'none'; }
-        
-        async function confirmarSaque() {
-            const btn = document.getElementById('btn-confirm-saque');
-            const valorInput = document.getElementById('saque-valor');
-            const valor = parseFloat(valorInput.value);
-            const chave = document.getElementById('saque-chave').value;
-
-            if(!valor || valor < 50) return alert("Mínimo R$ 50,00");
-            if(valor > parseFloat(userLocal.saldoDisponivel)) return alert("Saldo insuficiente.");
-            if(!chave) return alert("Informe a chave PIX.");
-
-            btn.disabled = true; btn.innerText = "PROCESSANDO...";
-
-            try {
-                const res = await fetch('api_bridge.php?path=api/usuarios/admin/solicitar-saque', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        emailUsuario: userLocal.email,
-                        valor: valor,
-                        chavePix: chave
-                    })
-                });
-
-                const resultado = await res.json();
-
-                if (resultado.status === 'success') {
-                    // ATUALIZAÇÃO CRÍTICA: Subtrai o valor localmente para refletir na UI imediatamente
-                    userLocal.saldoDisponivel = parseFloat(userLocal.saldoDisponivel) - valor;
-                    userLocal.ultimoSaqueSolicitado = valor;
-                    
-                    // Salva no localStorage para persistência
-                    localStorage.setItem('usuarioLogado', JSON.stringify(userLocal));
-                    
-                    alert("SAQUE SOLICITADO! Seu saldo foi atualizado.");
-                    fecharModalSaque();
-                    
-                    // Chama a função de renderização para aplicar o novo saldo visualmente
-                    loadDashboardData();
-                } else {
-                    alert(resultado.message || "Erro ao processar saque.");
-                }
-            } catch (err) { 
-                alert("Erro de conexão com o servidor."); 
-            } finally { 
-                btn.disabled = false; btn.innerText = "CONFIRMAR E ABATER SALDO"; 
-            }
         }
 
         async function loadDashboardData() {
             try {
+                // Sincroniza dados com o servidor
                 const res = await fetch('api_bridge.php?path=api/usuarios/todos');
+                if(!res.ok) throw new Error("Erro de rede");
                 const users = await res.json();
+                
                 const currentUser = users.find(u => u.email.toLowerCase() === userLocal.email.toLowerCase());
 
                 if (currentUser) {
                     userLocal = currentUser;
                     localStorage.setItem('usuarioLogado', JSON.stringify(currentUser));
 
-                    // Atualiza Nome e Admin Badge
+                    // Atualiza Cabeçalho
                     document.getElementById('user-name').innerHTML = `OLÁ, ${currentUser.nome.split(' ')[0].toUpperCase()} ${currentUser.email === 'toiiss@dietaexata.com.br' ? '<span class="admin-badge">MASTER</span>' : ''}`;
                     document.getElementById('user-plan').innerText = currentUser.plano || "BRONZE";
                     
-                    // ATUALIZAÇÃO DO SALDO (Reflete o valor abatido)
-                    document.getElementById('balance').innerText = `R$ ${parseFloat(currentUser.saldoDisponivel || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                    // Atualiza Saldo
+                    const saldoDisp = parseFloat(currentUser.saldoDisponivel || 0);
+                    document.getElementById('balance').innerText = `R$ ${saldoDisp.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                     
-                    // Exibe info de saque pendente se houver
-                    const pendente = parseFloat(currentUser.ultimoSaqueSolicitado || 0);
+                    // Verificação de Saque Pendente (Sincronizado com saldoSolicitado do Java)
+                    const pendente = parseFloat(currentUser.saldoSolicitado || 0);
                     const infoPendente = document.getElementById('pending-withdrawal-info');
+                    const btnSaque = document.getElementById('main-withdraw-btn');
+
                     if (pendente > 0) {
                         infoPendente.style.display = 'block';
-                        infoPendente.innerText = `AGUARDANDO PAGAMENTO: R$ ${pendente.toFixed(2)}`;
+                        infoPendente.innerText = `AGUARDANDO PAGAMENTO: R$ ${pendente.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                        btnSaque.disabled = true;
+                        btnSaque.innerText = "SAQUE EM ANÁLISE";
                     } else {
                         infoPendente.style.display = 'none';
+                        btnSaque.disabled = false;
+                        btnSaque.innerText = "SAQUE TOTAL PIX";
                     }
 
-                    // Ganhos Totais
+                    // Ganhos Totais (MMN)
                     const ganhosTotais = (parseFloat(currentUser.ganhosDiretos || 0)) + (parseFloat(currentUser.ganhosIndiretos || 0));
                     document.getElementById('total-earnings').innerText = `R$ ${ganhosTotais.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                     document.getElementById('ganho-dir').innerText = `R$ ${parseFloat(currentUser.ganhosDiretos || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                     document.getElementById('ganho-ind').innerText = `R$ ${parseFloat(currentUser.ganhosIndiretos || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
 
-                    // MMN: Rede Nível 1
+                    // Rede Nível 1
                     const indicados = users.filter(u => u.indicadoPor && u.indicadoPor.toLowerCase() === currentUser.email.toLowerCase());
                     document.getElementById('referrals').innerText = indicados.length;
+                    
                     let listaHtml = "";
                     indicados.forEach(i => {
                         listaHtml += `<tr><td>${i.nome}</td><td>${i.plano}</td><td style="color:var(--green); font-weight:700;">ATIVO</td></tr>`;
@@ -545,12 +507,14 @@
                     const link = `${window.location.origin}/cadastro.html?ref=${encodeURIComponent(currentUser.email)}`;
                     document.getElementById('affiliate-link').innerText = link;
 
-                    // Dados Administrativos
-                    if (currentUser.email === 'toiiss@dietaexata.com.br') {
-                        renderAdminData(users);
-                    }
+                    // Painel Admin
+                    if (currentUser.email === 'toiiss@dietaexata.com.br') renderAdminData(users);
                 }
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error("Falha ao sincronizar:", err); 
+                document.getElementById('system-status').innerText = "● ERRO DE CONEXÃO";
+                document.getElementById('system-status').style.color = "#ff4444";
+            }
         }
 
         function renderAdminData(allUsers) {
@@ -565,33 +529,93 @@
             });
             document.getElementById('admin-lista-geral').innerHTML = htmlUsers;
 
-            const saques = allUsers.filter(u => parseFloat(u.ultimoSaqueSolicitado || 0) > 0);
+            const saques = allUsers.filter(u => parseFloat(u.saldoSolicitado || 0) > 0);
             let htmlSaques = "";
             saques.forEach(s => {
                 htmlSaques += `<tr>
                     <td>${s.nome}</td>
-                    <td>R$ ${s.ultimoSaqueSolicitado}</td>
-                    <td><small>${s.chavePixSaque || s.chavePix || '---'}</small></td>
+                    <td>R$ ${parseFloat(s.saldoSolicitado).toFixed(2)}</td>
+                    <td><small>${s.chavePix || '---'}</small></td>
                     <td><button class="btn-withdraw" onclick="finalizarSaqueAdmin('${s.email}')">BAIXA PAGO</button></td>
                 </tr>`;
             });
-            document.getElementById('admin-lista-saques').innerHTML = htmlSaques || "<tr><td colspan='4'>Sem saques pendentes.</td></tr>";
+            document.getElementById('admin-lista-saques').innerHTML = htmlSaques || "<tr><td colspan='4' style='text-align:center;'>Sem saques pendentes.</td></tr>";
         }
 
         async function ativarUsuarioAdmin(email) {
-            if(!confirm("Deseja ativar manualmente este usuário?")) return;
-            const res = await fetch(`api_bridge.php?path=api/usuarios/renovar-plano-admin/${email}`, { method: 'POST' });
-            if(res.ok) { alert("Usuário Ativado!"); loadDashboardData(); }
+            if(!confirm("Ativar usuário?")) return;
+            // Corrigindo para a rota de upgrade manual que criamos
+            const res = await fetch(`api_bridge.php?path=api/usuarios/processar-upgrade`, { 
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email: email, metodo: 'ADMIN_MANUAL' })
+            });
+            if(res.ok) { alert("Ativado!"); loadDashboardData(); }
         }
 
         async function finalizarSaqueAdmin(email) {
-            if(!confirm("Confirmar pagamento PIX? Isso limpará a pendência do usuário.")) return;
-            const res = await fetch(`api_bridge.php?path=api/usuarios/admin/finalizar-saque`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ emailUsuario: email })
-            });
-            if(res.ok) { alert("Pagamento confirmado!"); loadDashboardData(); }
+            if(!confirm("Confirmar pagamento?")) return;
+            // Aqui você deve criar o endpoint no Java para resetar o saldoSolicitado para 0
+            alert("Em desenvolvimento: O Admin deve zerar o saldoSolicitado no banco.");
+        }
+
+        // --- CORREÇÃO DO SAQUE PARA O DINHEIRO SUMIR DA TELA ---
+        async function confirmarSaque() {
+            const btn = document.getElementById('btn-confirm-saque');
+            const valorTotalParaSaque = parseFloat(userLocal.saldoDisponivel);
+            const chave = document.getElementById('saque-chave').value;
+
+            if(!valorTotalParaSaque || valorTotalParaSaque < 50) return alert("Mínimo R$ 50,00");
+            if(!chave) return alert("Informe a chave PIX.");
+
+            btn.disabled = true; btn.innerText = "PROCESSANDO...";
+
+            try {
+                // Chamando a rota correta que definimos no Controller
+                const res = await fetch('api_bridge.php?path=api/usuarios/solicitar-saque', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        email: userLocal.email,
+                        valor: valorTotalParaSaque,
+                        chavePix: chave // Passando a chave PIX para o banco
+                    })
+                });
+
+                if (res.ok) {
+                    const usuarioAtualizado = await res.json();
+                    
+                    // ATUALIZA O LOCALSTORAGE NA HORA
+                    localStorage.setItem('usuarioLogado', JSON.stringify(usuarioAtualizado));
+                    userLocal = usuarioAtualizado;
+
+                    alert("SAQUE SOLICITADO COM SUCESSO!");
+                    fecharModalSaque();
+                    
+                    // Força a atualização da tela
+                    loadDashboardData(); 
+                } else {
+                    const erro = await res.text();
+                    alert("Erro: " + erro);
+                }
+            } catch (err) { alert("Erro de conexão."); }
+            btn.disabled = false; btn.innerText = "CONFIRMAR E SACAR TUDO";
+        }
+
+        async function executarTransferencia() {
+            const emailDest = document.getElementById('transf-email').value.trim();
+            const valor = parseFloat(document.getElementById('transf-valor').value);
+            if (!emailDest || isNaN(valor) || valor <= 0 || valor > userLocal.saldoDisponivel) return alert("Verifique dados/saldo.");
+
+            try {
+                const res = await fetch('api_bridge.php?path=api/usuarios/transferir', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ emailOrigem: userLocal.email, emailDestino: emailDest, valor: valor })
+                });
+                if (res.ok) { alert("Transferência Concluída!"); loadDashboardData(); }
+                else { alert("Erro ao transferir."); }
+            } catch (err) { alert("Erro de rede."); }
         }
 
         function filterAdminUsers() {
@@ -600,32 +624,26 @@
             rows.forEach(r => r.style.display = r.innerText.toLowerCase().includes(val) ? '' : 'none');
         }
 
-        async function executarTransferencia() {
-            const emailDest = document.getElementById('transf-email').value.trim();
-            const valor = parseFloat(document.getElementById('transf-valor').value);
-            if (!emailDest || isNaN(valor) || valor <= 0 || valor > userLocal.saldoDisponivel) return alert("Verifique os dados e saldo.");
-
-            try {
-                const res = await fetch('api_bridge.php?path=api/usuarios/transferir', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ emailOrigem: userLocal.email, emailDestino: emailDest, valor: valor })
-                });
-                if (res.ok) { alert("Sucesso!"); loadDashboardData(); }
-            } catch (err) { alert("Erro de conexão."); }
+        function abrirModalSaque() { 
+            const saldo = parseFloat(userLocal.saldoDisponivel || 0);
+            if(saldo < 50) return alert("Saldo insuficiente (Mín. R$ 50)");
+            document.getElementById('modal-valor-exibicao').innerText = `R$ ${saldo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('modalSaque').style.display = 'flex'; 
         }
-
+        function fecharModalSaque() { document.getElementById('modalSaque').style.display = 'none'; }
+        
         function copyLink() {
             const link = document.getElementById('affiliate-link').innerText;
             navigator.clipboard.writeText(link).then(() => {
                 const box = document.getElementById('affiliate-link');
-                const old = box.innerText;
+                const oldText = box.innerText;
                 box.innerText = "COPIADO!";
-                setTimeout(() => box.innerText = old, 2000);
+                setTimeout(() => box.innerText = oldText, 2000);
             });
         }
 
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
         window.onload = loadDashboardData;
         setInterval(loadDashboardData, 15000); 
     </script>

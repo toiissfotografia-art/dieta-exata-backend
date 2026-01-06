@@ -95,33 +95,39 @@ public class UsuarioController {
         }
     }
 
-    // --- ENDPOINT PARA SOLICITAR SAQUE (DEDUZINDO DO BANCO) ---
-    
+    // --- ENDPOINT PARA SOLICITAR SAQUE (CORRIGIDO PARA ATUALIZAR DASHBOARD) ---
     @PostMapping("/solicitar-saque")
     public ResponseEntity<?> solicitarSaque(@RequestBody Map<String, Object> payload) {
-        String email = (String) payload.get("email");
-        Double valorSaque = Double.parseDouble(payload.get("valor").toString());
-
-        Usuario u = repository.findByEmail(email);
-        if (u == null) return ResponseEntity.status(404).body("Usuário não encontrado.");
-
-        double saldoAtual = Optional.ofNullable(u.getSaldoDisponivel()).orElse(0.0);
-
-        if (saldoAtual >= valorSaque) {
-            // AQUI É ONDE O SALDO É "APAGADO" (SUBTRAÍDO) DO BANCO DE DADOS
-            u.setSaldoDisponivel(saldoAtual - valorSaque);
+        try {
+            String email = (String) payload.get("email");
+            if (payload.get("valor") == null) return ResponseEntity.badRequest().body("Valor não informado.");
             
-            // Adicionamos ao saldo solicitado (pendente de pagamento pelo admin)
-            u.setSaldoSolicitado(Optional.ofNullable(u.getSaldoSolicitado()).orElse(0.0) + valorSaque);
-            
-            repository.saveAndFlush(u);
-            return ResponseEntity.ok(Map.of("mensagem", "Saque realizado com sucesso!", "novoSaldo", u.getSaldoDisponivel()));
-        } else {
-            return ResponseEntity.badRequest().body("Saldo insuficiente para o saque solicitado.");
+            Double valorSaque = Double.parseDouble(payload.get("valor").toString());
+
+            Usuario u = repository.findByEmail(email);
+            if (u == null) return ResponseEntity.status(404).body("Usuário não encontrado.");
+
+            double saldoAtual = Optional.ofNullable(u.getSaldoDisponivel()).orElse(0.0);
+
+            if (saldoAtual >= valorSaque) {
+                // Deduz do disponível e move para o solicitado
+                u.setSaldoDisponivel(saldoAtual - valorSaque);
+                u.setSaldoSolicitado(Optional.ofNullable(u.getSaldoSolicitado()).orElse(0.0) + valorSaque);
+                
+                // Salva e força a atualização no banco
+                Usuario usuarioAtualizado = repository.saveAndFlush(u);
+                
+                // RETORNA O USUÁRIO ATUALIZADO (Isso permite que o front-end zere o saldo na tela)
+                return ResponseEntity.ok(usuarioAtualizado);
+            } else {
+                return ResponseEntity.badRequest().body("Saldo insuficiente.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body("Erro ao processar saque: " + e.getMessage());
         }
     }
 
-    // --- MÉTODOS SOLICITADOS PELO PAYMENTCONTROLLER ---
+    // --- MÉTODOS DE INTEGRAÇÃO ---
 
     public void renovarPlanoAdmin(String email) {
         Usuario u = repository.findByEmail(email);
@@ -131,7 +137,6 @@ public class UsuarioController {
             }
             u.setDataExpiracao(LocalDateTime.now().plusDays(30));
             repository.saveAndFlush(u);
-            System.out.println("Plano renovado via Admin/Pagamento para: " + email);
         }
     }
 
@@ -148,7 +153,6 @@ public class UsuarioController {
         if (u != null) {
             u.setDataExpiracao(LocalDateTime.now().minusDays(1)); 
             repository.saveAndFlush(u);
-            System.out.println("Pagamento estornado/cancelado para: " + email);
         }
     }
 
@@ -196,7 +200,6 @@ public class UsuarioController {
             if ("SALDO".equalsIgnoreCase(metodo)) {
                 String novoPlano = payload.get("plano") != null ? payload.get("plano").toUpperCase() : "OURO";
                 double custo = novoPlano.equals("OURO") ? 79.99 : (novoPlano.equals("PRATA") ? 49.99 : 19.99);
-
                 double saldo = Optional.ofNullable(u.getSaldoDisponivel()).orElse(0.0);
                 if (saldo < custo) return ResponseEntity.badRequest().body("{\"erro\":\"Saldo insuficiente.\"}");
                 
@@ -213,7 +216,7 @@ public class UsuarioController {
         }
     }
 
-    // LÓGICA DE MMN (Multi-Level Marketing) - PRESERVADA
+    // LÓGICA DE MMN (Multi-Level Marketing) - PRESERVADA E CONECTADA
     private void processarGanhosRede(Usuario novo) {
         if (novo.getIndicadoPor() == null || novo.getIndicadoPor().isEmpty()) return;
 
@@ -246,13 +249,11 @@ public class UsuarioController {
                 Usuario avo = repository.findByEmail(pai.getIndicadoPor().toLowerCase().trim());
                 if (avo != null) {
                     String planoAvo = (avo.getPlano() != null) ? avo.getPlano().toUpperCase() : "BRONZE";
-                    
                     double bonusN2 = switch (planoAvo) {
                         case "OURO"  -> 5.00;
                         case "PRATA" -> 2.50;
                         default      -> 1.00;
                     };
-                    
                     creditarValor(avo, bonusN2, false);
                     avo.setNivel2count(Optional.ofNullable(avo.getNivel2count()).orElse(0) + 1);
                     repository.save(avo);
@@ -261,10 +262,8 @@ public class UsuarioController {
         }
     }
 
-    // CRÉDITO DE VALOR - SEMPRE SOMANDO PARA NÃO SOBRESCREVER SAQUES
     private void creditarValor(Usuario u, double valor, boolean isDireto) {
         if (u == null) return;
-        // u.setSaldoDisponivel(saldoAnterior + novoValor)
         u.setSaldoDisponivel(Optional.ofNullable(u.getSaldoDisponivel()).orElse(0.0) + valor);
         if (isDireto) u.setGanhosDiretos(Optional.ofNullable(u.getGanhosDiretos()).orElse(0.0) + valor);
         else u.setGanhosIndiretos(Optional.ofNullable(u.getGanhosIndiretos()).orElse(0.0) + valor);
